@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		DA40D169290806BD00436992 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA40D168290806BD00436992 /* main.m */; };
+		DA40D1702908154000436992 /* BonjourService.m in Sources */ = {isa = PBXBuildFile; fileRef = DA40D16F2908150100436992 /* BonjourService.m */; };
+		DA40D17329082A1F00436992 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DA40D17229082A1F00436992 /* BonjourConnection.m */; };
+		DA40D176290831F800436992 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA40D175290831F800436992 /* BonjourObject.m */; };
+		DA40D17729084FAB00436992 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DA40D17229082A1F00436992 /* BonjourConnection.m */; };
+		DA40D17829084FAF00436992 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA40D175290831F800436992 /* BonjourObject.m */; };
 		DA63A5912906DB7900E756BC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA63A5902906DB7900E756BC /* main.m */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +40,12 @@
 /* Begin PBXFileReference section */
 		DA40D166290806BD00436992 /* NWBonjourClient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NWBonjourClient; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA40D168290806BD00436992 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		DA40D16E2908150100436992 /* BonjourService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BonjourService.h; sourceTree = "<group>"; };
+		DA40D16F2908150100436992 /* BonjourService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BonjourService.m; sourceTree = "<group>"; };
+		DA40D17129082A1F00436992 /* BonjourConnection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BonjourConnection.h; sourceTree = "<group>"; };
+		DA40D17229082A1F00436992 /* BonjourConnection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BonjourConnection.m; sourceTree = "<group>"; };
+		DA40D174290831F800436992 /* BonjourObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BonjourObject.h; sourceTree = "<group>"; };
+		DA40D175290831F800436992 /* BonjourObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BonjourObject.m; sourceTree = "<group>"; };
 		DA63A58D2906DB7900E756BC /* NWBonjourService */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NWBonjourService; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA63A5902906DB7900E756BC /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -65,9 +76,23 @@
 			path = NWBonjourClient;
 			sourceTree = "<group>";
 		};
+		DA40D16D2908121E00436992 /* Adapter */ = {
+			isa = PBXGroup;
+			children = (
+				DA40D16E2908150100436992 /* BonjourService.h */,
+				DA40D16F2908150100436992 /* BonjourService.m */,
+				DA40D17129082A1F00436992 /* BonjourConnection.h */,
+				DA40D17229082A1F00436992 /* BonjourConnection.m */,
+				DA40D174290831F800436992 /* BonjourObject.h */,
+				DA40D175290831F800436992 /* BonjourObject.m */,
+			);
+			path = Adapter;
+			sourceTree = "<group>";
+		};
 		DA63A5822906D9E300E756BC = {
 			isa = PBXGroup;
 			children = (
+				DA40D16D2908121E00436992 /* Adapter */,
 				DA63A58F2906DB7900E756BC /* NWBonjourService */,
 				DA40D167290806BD00436992 /* NWBonjourClient */,
 				DA63A58E2906DB7900E756BC /* Products */,
@@ -170,6 +195,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA40D169290806BD00436992 /* main.m in Sources */,
+				DA40D17829084FAF00436992 /* BonjourObject.m in Sources */,
+				DA40D17729084FAB00436992 /* BonjourConnection.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -177,7 +204,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA40D176290831F800436992 /* BonjourObject.m in Sources */,
+				DA40D17329082A1F00436992 /* BonjourConnection.m in Sources */,
 				DA63A5912906DB7900E756BC /* main.m in Sources */,
+				DA40D1702908154000436992 /* BonjourService.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
