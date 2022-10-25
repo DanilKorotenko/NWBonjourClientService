@@ -7,6 +7,12 @@
 
 #import "BonjourConnection.h"
 
+@interface BonjourConnection ()
+
+//@property (strong) NSString *bonjourServiceName;
+
+@end
+
 @implementation BonjourConnection
 {
     dispatch_queue_t _queue;
@@ -42,7 +48,7 @@
     self = [self initWithConnection:connection];
     if (self)
     {
-
+        self.bonjourServiceName = aServiceName;
     }
     return self;
 }
@@ -69,35 +75,35 @@
     nw_connection_set_state_changed_handler(_connection,
         ^(nw_connection_state_t state, nw_error_t error)
         {
-        nw_endpoint_t remote = nw_connection_copy_endpoint(self->_connection);
+//            nw_endpoint_t remote = nw_connection_copy_endpoint(self->_connection);
             errno = error ? nw_error_get_error_code(error) : 0;
             if (state == nw_connection_state_waiting)
             {
                 NSString *message = [NSString stringWithFormat:
-                    @"connect to %s port %u (tcp) failed, is waiting",
-                    nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote)];
+                    @"connect to %@ failed, is waiting",
+//                    [self getBonjourNameFromEndpoint:remote]];
+                    self.bonjourServiceName];
                 [self logOutside:message];
             }
             else if (state == nw_connection_state_failed)
             {
-                NSString *message = [NSString stringWithFormat:@"connect to %s port %u (tcp) failed",
-                    nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote)];
+                NSString *message = [NSString stringWithFormat:@"connect to %@ failed",
+//                    [self getBonjourNameFromEndpoint:remote]];
+                    self.bonjourServiceName];
                 [self logOutside:message];
             }
             else if (state == nw_connection_state_ready)
             {
                 NSString *message = [NSString stringWithFormat:
-                    @"Connection to %s port %u (tcp) succeeded!", nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote)];
+//                    @"Connection to %@ succeeded!", [self getBonjourNameFromEndpoint:remote]];
+                    @"Connection to %@ succeeded!", self.bonjourServiceName];
                 [self logOutside:message];
             }
             else if (state == nw_connection_state_cancelled)
             {
                 NSString *message = [NSString stringWithFormat:
-                    @"Connection to %s port %u (tcp) canceled!", nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote)];
+//                    @"Connection to %@ canceled!", [self getBonjourNameFromEndpoint:remote]];
+                    @"Connection to %@ canceled!", self.bonjourServiceName];
                 [self logOutside:message];
 
                 // Release the primary reference on the connection

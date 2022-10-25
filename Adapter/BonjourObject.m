@@ -36,4 +36,11 @@
     }
 }
 
+- (NSString *)getBonjourNameFromEndpoint:(nw_endpoint_t _Nonnull)anEndpoint
+{
+    return [NSString stringWithFormat:@"%s.%s.%s",
+        nw_endpoint_get_bonjour_service_name(anEndpoint),
+        self.class.defaultType.UTF8String, self.class.localDomain.UTF8String];
+}
+
 @end

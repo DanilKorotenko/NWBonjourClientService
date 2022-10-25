@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Network/Network.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -13,10 +14,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(class, readonly) NSString *defaultType;
 @property(class, readonly) NSString *localDomain;
+@property(strong) NSString *bonjourServiceName;
 
 - (void)setLogBlock:(void (^)(const char * _Nonnull aLogMessage))aLogBlock;
 
 - (void)logOutside:(NSString *)aLogMessage;
+
+//- (NSString *)getBonjourNameFromEndpoint:(nw_endpoint_t _Nonnull)anEndpoint;
 
 @end
 

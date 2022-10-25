@@ -12,8 +12,6 @@
 
 @interface BonjourService ()
 
-@property (strong) NSString *name;
-
 @end
 
 @implementation BonjourService
@@ -29,7 +27,7 @@
     self = [super init];
     if (self)
     {
-        self.name = aName;
+        self.bonjourServiceName = aName;
         _queue = dispatch_queue_create(aName.UTF8String, NULL);
     }
     return self;
@@ -61,18 +59,18 @@
 
     // Advertise name over Bonjour
     nw_advertise_descriptor_t advertise = nw_advertise_descriptor_create_bonjour_service(
-        self.name.UTF8String, self.class.defaultType.UTF8String, self.class.localDomain.UTF8String);
+        self.bonjourServiceName.UTF8String, self.class.defaultType.UTF8String, self.class.localDomain.UTF8String);
 
     nw_listener_set_advertise_descriptor(_listener, advertise);
 
     nw_listener_set_advertised_endpoint_changed_handler(_listener,
         ^(nw_endpoint_t _Nonnull advertised_endpoint, bool added)
         {
-            NSString *message = [NSString stringWithFormat:@"Listener %s on %s (%s.%s.%s)",
+            NSString *message = [NSString stringWithFormat:@"Listener %s on %s (%@)",
                 added ? "added" : "removed",
                 nw_endpoint_get_bonjour_service_name(advertised_endpoint),
-                nw_endpoint_get_bonjour_service_name(advertised_endpoint),
-                "_exampleService._tcp", "local"];
+//                [self getBonjourNameFromEndpoint:advertised_endpoint]];
+                self.bonjourServiceName];
             [self logOutside:message];
         });
 
@@ -113,7 +111,7 @@
     nw_listener_set_new_connection_handler(_listener,
         ^(nw_connection_t connection)
         {
-        if(self->_newConnectionBlock)
+            if(self->_newConnectionBlock)
             {
                 BonjourConnection *newConnection =
                     [[BonjourConnection alloc] initWithConnection:connection];
