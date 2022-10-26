@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		DA40D169290806BD00436992 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA40D168290806BD00436992 /* main.m */; };
+		DA40D17C29094E0600436992 /* listener.c in Sources */ = {isa = PBXBuildFile; fileRef = DA40D17B29094E0600436992 /* listener.c */; };
+		DA40D17F2909510D00436992 /* client.c in Sources */ = {isa = PBXBuildFile; fileRef = DA40D17E2909503900436992 /* client.c */; };
 		DA63A5912906DB7900E756BC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA63A5902906DB7900E756BC /* main.m */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +37,10 @@
 /* Begin PBXFileReference section */
 		DA40D166290806BD00436992 /* NWBonjourClient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NWBonjourClient; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA40D168290806BD00436992 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		DA40D17A29094E0600436992 /* listener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = listener.h; sourceTree = "<group>"; };
+		DA40D17B29094E0600436992 /* listener.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = listener.c; sourceTree = "<group>"; };
+		DA40D17D2909503900436992 /* client.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = client.h; sourceTree = "<group>"; };
+		DA40D17E2909503900436992 /* client.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client.c; sourceTree = "<group>"; };
 		DA63A58D2906DB7900E756BC /* NWBonjourService */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NWBonjourService; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA63A5902906DB7900E756BC /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -65,9 +71,21 @@
 			path = NWBonjourClient;
 			sourceTree = "<group>";
 		};
+		DA40D17929094DD400436992 /* Bonjour */ = {
+			isa = PBXGroup;
+			children = (
+				DA40D17A29094E0600436992 /* listener.h */,
+				DA40D17B29094E0600436992 /* listener.c */,
+				DA40D17D2909503900436992 /* client.h */,
+				DA40D17E2909503900436992 /* client.c */,
+			);
+			path = Bonjour;
+			sourceTree = "<group>";
+		};
 		DA63A5822906D9E300E756BC = {
 			isa = PBXGroup;
 			children = (
+				DA40D17929094DD400436992 /* Bonjour */,
 				DA63A58F2906DB7900E756BC /* NWBonjourService */,
 				DA40D167290806BD00436992 /* NWBonjourClient */,
 				DA63A58E2906DB7900E756BC /* Products */,
@@ -169,6 +187,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA40D17F2909510D00436992 /* client.c in Sources */,
 				DA40D169290806BD00436992 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -178,6 +197,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA63A5912906DB7900E756BC /* main.m in Sources */,
+				DA40D17C29094E0600436992 /* listener.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
