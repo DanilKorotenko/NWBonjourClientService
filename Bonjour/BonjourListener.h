@@ -9,9 +9,23 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol BonjourListenerDelegate <NSObject>
+
+@required
+
+- (void)advertisedEndpointChanged:(NSString *)message;
+
+@end
+
 @interface BonjourListener : NSObject
 
 + (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain;
+
+- (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain;
+
+@property(weak) id<BonjourListenerDelegate> delegate;
+
+- (BOOL)start;
 
 @end
 

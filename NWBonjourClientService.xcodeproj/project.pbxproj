@@ -14,6 +14,7 @@
 		DACAF0C9290C0A1000A614D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DACAF0C8290C0A1000A614D2 /* Assets.xcassets */; };
 		DACAF0CC290C0A1000A614D2 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = DACAF0CA290C0A1000A614D2 /* MainMenu.xib */; };
 		DACAF0CE290C0A1000A614D2 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0CD290C0A1000A614D2 /* main.m */; };
+		DACAF0D3290C1D8000A614D2 /* BonjourListener.m in Sources */ = {isa = PBXBuildFile; fileRef = DAFFC1D5290BF1DF00DB1B90 /* BonjourListener.m */; };
 		DAFFC1D6290BF1DF00DB1B90 /* BonjourListener.m in Sources */ = {isa = PBXBuildFile; fileRef = DAFFC1D5290BF1DF00DB1B90 /* BonjourListener.m */; };
 /* End PBXBuildFile section */
 
@@ -271,6 +272,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DACAF0D3290C1D8000A614D2 /* BonjourListener.m in Sources */,
 				DACAF0CE290C0A1000A614D2 /* main.m in Sources */,
 				DACAF0C7290C0A0F00A614D2 /* AppDelegate.m in Sources */,
 			);

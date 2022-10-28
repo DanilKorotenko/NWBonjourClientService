@@ -10,8 +10,6 @@
 #import <Network/Network.h>
 #import <err.h>
 
-nw_connection_t g_inbound_connection = NULL;
-
 /*
  * receive_loop()
  * Perform a single read on the supplied connection, and write data to
@@ -188,6 +186,7 @@ void start_connection(nw_connection_t connection)
 @implementation BonjourListener
 {
     nw_listener_t _listener;
+    nw_connection_t _inbound_connection;
 }
 
 + (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain
@@ -210,6 +209,7 @@ void start_connection(nw_connection_t connection)
         self.name = aName;
         self.type = aType;
         self.domain = aDomain;
+        _inbound_connection = NULL;
     }
     return self;
 }
@@ -232,12 +232,13 @@ void start_connection(nw_connection_t connection)
     nw_listener_set_advertised_endpoint_changed_handler(_listener,
         ^(nw_endpoint_t _Nonnull advertised_endpoint, bool added)
         {
-            fprintf(stderr, "Listener %s on %s (%s.%s.%s)\n",
-                added ? "added" : "removed",
+            NSString *message = [NSString stringWithFormat:
+                @"Listener %s on %s (%s.%s.%s)", added ? "added" : "removed",
                 nw_endpoint_get_bonjour_service_name(advertised_endpoint),
                 nw_endpoint_get_bonjour_service_name(advertised_endpoint),
                 self.type.UTF8String,
-                self.domain.UTF8String);
+                self.domain.UTF8String];
+            [self.delegate advertisedEndpointChanged:message];
         });
 
     nw_listener_set_queue(_listener, dispatch_get_main_queue());
@@ -271,7 +272,7 @@ void start_connection(nw_connection_t connection)
     nw_listener_set_new_connection_handler(_listener,
         ^(nw_connection_t connection)
         {
-            if (g_inbound_connection != NULL)
+            if (self->_inbound_connection != NULL)
             {
                 // We only support one connection at a time, so if we already
                 // have one, reject the incoming connection.
@@ -281,10 +282,10 @@ void start_connection(nw_connection_t connection)
             {
                 // Accept the incoming connection and start sending
                 // and receiving on it.
-                g_inbound_connection = connection;
+                self->_inbound_connection = connection;
 
-                start_connection(g_inbound_connection);
-                start_send_receive_loop(g_inbound_connection);
+                start_connection(self->_inbound_connection);
+                start_send_receive_loop(self->_inbound_connection);
             }
         });
 

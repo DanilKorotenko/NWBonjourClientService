@@ -10,18 +10,42 @@
 #import <err.h>
 #import "BonjourListener.h"
 
+@interface Delegate : NSObject<BonjourListenerDelegate>
+
+@end
+
+@implementation Delegate
+
+- (void)advertisedEndpointChanged:(NSString *)message
+{
+    NSLog(@"%@", message);
+}
+
+@end
+
+static Delegate *listenerDelegate = nil;
+static BonjourListener *listener = nil;
+
 int main(int argc, const char * argv[])
 {
     @autoreleasepool
     {
         NSLog(@"Hello, Bonjour service!");
 
-        BonjourListener *listener = [BonjourListener createAndStartWithName:@"danilkorotenko.hellobonjour" type:@"_exampleService._tcp" domain:@"local"];
+        listenerDelegate = [[Delegate alloc] init];
+
+        listener = [[BonjourListener alloc]
+            initWithName:@"danilkorotenko.hellobonjour" type:@"_exampleService._tcp"
+            domain:@"local"];
+
+        listener.delegate = listenerDelegate;
 
         if (listener == nil)
         {
             err(1, NULL);
         }
+
+        [listener start];
     }
 
     dispatch_main();
