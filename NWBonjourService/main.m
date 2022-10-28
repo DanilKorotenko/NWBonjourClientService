@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 #import <Network/Network.h>
 #import <err.h>
-//#include "listener.h"
 #import "BonjourListener.h"
 
 int main(int argc, const char * argv[])
