@@ -8,7 +8,8 @@
 #import <Foundation/Foundation.h>
 #import <Network/Network.h>
 #import <err.h>
-#include "listener.h"
+//#include "listener.h"
+#import "BonjourListener.h"
 
 int main(int argc, const char * argv[])
 {
@@ -16,8 +17,9 @@ int main(int argc, const char * argv[])
     {
         NSLog(@"Hello, Bonjour service!");
 
-        nw_listener_t listener = create_and_start_listener("danilkorotenko.hellobonjour");
-        if (listener == NULL)
+        BonjourListener *listener = [BonjourListener createAndStartWithName:@"danilkorotenko.hellobonjour" type:@"_exampleService._tcp" domain:@"local"];
+
+        if (listener == nil)
         {
             err(1, NULL);
         }

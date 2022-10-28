@@ -1,16 +1,14 @@
 //
-//  listener.c
+//  BonjourListener.m
 //  NWBonjourService
 //
-//  Created by Danil Korotenko on 10/26/22.
+//  Created by Danil Korotenko on 10/28/22.
 //
 
-#include "listener.h"
+#import "BonjourListener.h"
+//#include "listener.h"
 #import <Network/Network.h>
 #import <err.h>
-
-#define BONJOUR_SERVICE_TCP_TYPE "_exampleService._tcp"
-#define BONJOUR_SERVICE_DOMAIN "local"
 
 nw_connection_t g_inbound_connection = NULL;
 
@@ -179,52 +177,79 @@ void start_connection(nw_connection_t connection)
     nw_connection_start(connection);
 }
 
+@interface BonjourListener ()
 
-/*
- * create_and_start_listener()
- * Returns a retained listener on a local port and optional address.
- * Sets up TLS as necessary.
- * Schedules listener on main queue and starts it.
- */
-nw_listener_t create_and_start_listener(char *name)
+@property (strong) NSString *name;
+@property (strong) NSString *type;
+@property (strong) NSString *domain;
+
+@end
+
+@implementation BonjourListener
+{
+    nw_listener_t _listener;
+}
+
++ (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain
+{
+    BonjourListener *result = [[BonjourListener alloc] initWithName:aName type:aType domain:aDomain];
+
+    if (![result start])
+    {
+        result = nil;
+    }
+
+    return result;
+}
+
+- (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain
+{
+    self = [super init];
+    if (self)
+    {
+        self.name = aName;
+        self.type = aType;
+        self.domain = aDomain;
+    }
+    return self;
+}
+
+- (BOOL)start
 {
     nw_parameters_t parameters = nw_parameters_create_secure_tcp(NW_PARAMETERS_DISABLE_PROTOCOL,
         NW_PARAMETERS_DEFAULT_CONFIGURATION);
 
-    nw_listener_t listener = nw_listener_create(parameters);
+    _listener = nw_listener_create(parameters);
 
-    if (name != NULL)
-    {
-        // Advertise name over Bonjour
-        nw_advertise_descriptor_t advertise = nw_advertise_descriptor_create_bonjour_service(
-            name,
-            BONJOUR_SERVICE_TCP_TYPE,
-            BONJOUR_SERVICE_DOMAIN);
+    // Advertise name over Bonjour
+    nw_advertise_descriptor_t advertise = nw_advertise_descriptor_create_bonjour_service(
+        self.name.UTF8String,
+        self.type.UTF8String,
+        self.domain.UTF8String);
 
-        nw_listener_set_advertise_descriptor(listener, advertise);
+    nw_listener_set_advertise_descriptor(_listener, advertise);
 
-        nw_listener_set_advertised_endpoint_changed_handler(listener,
-            ^(nw_endpoint_t _Nonnull advertised_endpoint, bool added)
-            {
-                fprintf(stderr, "Listener %s on %s (%s.%s.%s)\n",
-                    added ? "added" : "removed",
-                    nw_endpoint_get_bonjour_service_name(advertised_endpoint),
-                    nw_endpoint_get_bonjour_service_name(advertised_endpoint),
-                    BONJOUR_SERVICE_TCP_TYPE,
-                    BONJOUR_SERVICE_DOMAIN);
-            });
-    }
+    nw_listener_set_advertised_endpoint_changed_handler(_listener,
+        ^(nw_endpoint_t _Nonnull advertised_endpoint, bool added)
+        {
+            fprintf(stderr, "Listener %s on %s (%s.%s.%s)\n",
+                added ? "added" : "removed",
+                nw_endpoint_get_bonjour_service_name(advertised_endpoint),
+                nw_endpoint_get_bonjour_service_name(advertised_endpoint),
+                self.type.UTF8String,
+                self.domain.UTF8String);
+        });
 
-    nw_listener_set_queue(listener, dispatch_get_main_queue());
+    nw_listener_set_queue(_listener, dispatch_get_main_queue());
 
-    nw_listener_set_state_changed_handler(listener,
+    nw_listener_set_state_changed_handler(_listener,
         ^(nw_listener_state_t state, nw_error_t error)
         {
             errno = error ? nw_error_get_error_code(error) : 0;
             if (state == nw_listener_state_waiting)
             {
-                fprintf(stderr, "Listener on port %u (%s) waiting\n",
-                    nw_listener_get_port(listener), "tcp");
+                fprintf(stderr, "Listener on port %u (tcp) waiting\n",
+                    nw_listener_get_port(self->_listener));
             }
             else if (state == nw_listener_state_failed)
             {
@@ -233,16 +258,17 @@ nw_listener_t create_and_start_listener(char *name)
             else if (state == nw_listener_state_ready)
             {
                 fprintf(stderr, "Listener on port %u (%s) ready!\n",
-                    nw_listener_get_port(listener), "tcp");
+                    nw_listener_get_port(self->_listener), "tcp");
             }
             else if (state == nw_listener_state_cancelled)
             {
                 // Release the primary reference on the listener
                 // that was taken at creation time
+                // TODO: Notify delegate. Recreate Listener.
             }
         });
 
-    nw_listener_set_new_connection_handler(listener,
+    nw_listener_set_new_connection_handler(_listener,
         ^(nw_connection_t connection)
         {
             if (g_inbound_connection != NULL)
@@ -262,7 +288,9 @@ nw_listener_t create_and_start_listener(char *name)
             }
         });
 
-    nw_listener_start(listener);
+    nw_listener_start(_listener);
 
-    return listener;
+    return _listener != nil;
 }
+
+@end
