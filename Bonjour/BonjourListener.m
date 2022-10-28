@@ -232,45 +232,25 @@
         ^(dispatch_data_t content, nw_content_context_t context, bool is_complete,
             nw_error_t receive_error)
         {
-            dispatch_block_t schedule_next_receive =
-                ^{
-                    // If the context is marked as complete, and is the final context,
-                    // we're read-closed.
-                    if (is_complete &&
-                        (context == NULL || nw_content_context_get_is_final(context)))
-                    {
-                        exit(0);
-                    }
-
-                    // If there was no error in receiving, request more data
-                    if (receive_error == NULL)
-                    {
-                        [self receiveLoop:aConnection];
-                    }
-                };
-
             if (content != NULL)
             {
                 // If there is content, write it to stdout asynchronously
-                schedule_next_receive = schedule_next_receive;
-                dispatch_write(STDOUT_FILENO, content, self->_queue,
-                    ^(__unused dispatch_data_t _Nullable data, int stdout_error)
-                    {
-                        if (stdout_error != 0)
-                        {
-                            errno = stdout_error;
-                            warn("stdout write error");
-                        }
-                        else
-                        {
-                            schedule_next_receive();
-                        }
-                    });
+                NSData *data = (NSData *)content;
+                [self.delegate dataReceived:data];
             }
-            else
+
+            // If the context is marked as complete, and is the final context,
+            // we're read-closed.
+            if (is_complete &&
+                (context == NULL || nw_content_context_get_is_final(context)))
             {
-                // Content was NULL, so directly schedule the next receive
-                schedule_next_receive();
+                exit(0);
+            }
+
+            // If there was no error in receiving, request more data
+            if (receive_error == NULL)
+            {
+                [self receiveLoop:aConnection];
             }
         });
 }

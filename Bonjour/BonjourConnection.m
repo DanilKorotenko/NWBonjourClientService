@@ -162,7 +162,8 @@
 - (void)receiveLoop
 {
     nw_connection_receive(self->_connection, 1, UINT32_MAX,
-        ^(dispatch_data_t content, nw_content_context_t context, bool is_complete, nw_error_t receive_error)
+        ^(dispatch_data_t content, nw_content_context_t context, bool is_complete,
+            nw_error_t receive_error)
         {
             dispatch_block_t schedule_next_receive =
                 ^{

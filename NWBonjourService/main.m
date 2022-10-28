@@ -21,6 +21,13 @@
     NSLog(@"%@", message);
 }
 
+- (void)dataReceived:(NSData *)aData
+{
+    NSString *str = [[NSString alloc] initWithData:aData encoding:NSUTF8StringEncoding];
+
+    NSLog(@"a message from client: %@", str);
+}
+
 @end
 
 static Delegate *listenerDelegate = nil;

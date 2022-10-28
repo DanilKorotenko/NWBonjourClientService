@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @required
 
 - (void)advertisedEndpointChanged:(NSString *)message;
+- (void)dataReceived:(NSData *)aData;
 
 @end
 
