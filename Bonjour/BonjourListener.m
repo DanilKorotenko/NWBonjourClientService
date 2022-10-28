@@ -19,13 +19,16 @@
 
 @implementation BonjourListener
 {
-    nw_listener_t _listener;
-    nw_connection_t _inbound_connection;
+    nw_listener_t       _listener;
+    nw_connection_t     _inbound_connection;
+    dispatch_queue_t    _queue;
 }
 
-+ (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain
++ (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType
+    domain:(NSString *)aDomain
 {
-    BonjourListener *result = [[BonjourListener alloc] initWithName:aName type:aType domain:aDomain];
+    BonjourListener *result = [[BonjourListener alloc] initWithName:aName type:aType
+        domain:aDomain];
 
     if (![result start])
     {
@@ -44,6 +47,7 @@
         self.type = aType;
         self.domain = aDomain;
         _inbound_connection = NULL;
+        _queue = dispatch_queue_create("BonjourService.queue", NULL);
     }
     return self;
 }
@@ -75,7 +79,7 @@
             [self.delegate advertisedEndpointChanged:message];
         });
 
-    nw_listener_set_queue(_listener, dispatch_get_main_queue());
+    nw_listener_set_queue(_listener, _queue);
 
     nw_listener_set_state_changed_handler(_listener,
         ^(nw_listener_state_t state, nw_error_t error)
@@ -130,7 +134,7 @@
 
 - (void)startConnection:(nw_connection_t)aConnection
 {
-    nw_connection_set_queue(aConnection, dispatch_get_main_queue());
+    nw_connection_set_queue(aConnection, _queue);
 
     nw_connection_set_state_changed_handler(aConnection,
         ^(nw_connection_state_t state, nw_error_t error)
@@ -176,7 +180,7 @@
 
 - (void)sendLoop:(nw_connection_t)connection
 {
-    dispatch_read(STDIN_FILENO, 8192, dispatch_get_main_queue(),
+    dispatch_read(STDIN_FILENO, 8192, _queue,
         ^(dispatch_data_t _Nonnull read_data, int stdin_error)
         {
             if (stdin_error != 0)
@@ -249,7 +253,7 @@
             {
                 // If there is content, write it to stdout asynchronously
                 schedule_next_receive = schedule_next_receive;
-                dispatch_write(STDOUT_FILENO, content, dispatch_get_main_queue(),
+                dispatch_write(STDOUT_FILENO, content, self->_queue,
                     ^(__unused dispatch_data_t _Nullable data, int stdout_error)
                     {
                         if (stdout_error != 0)
