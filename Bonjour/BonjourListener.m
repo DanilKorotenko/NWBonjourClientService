@@ -95,23 +95,28 @@
             errno = error ? nw_error_get_error_code(error) : 0;
             if (state == nw_listener_state_waiting)
             {
-                fprintf(stderr, "Listener on port %u (tcp) waiting\n",
-                    nw_listener_get_port(self->_listener));
+                NSString *message = [NSString stringWithFormat:@"Listener on port %u waiting",
+                    nw_listener_get_port(self->_listener)];
+                [self logOutside:message];
             }
             else if (state == nw_listener_state_failed)
             {
-                warn("listener (%s) failed", "tcp");
+                [self logOutside:@"listener failed"];
             }
             else if (state == nw_listener_state_ready)
             {
-                fprintf(stderr, "Listener on port %u (%s) ready!\n",
-                    nw_listener_get_port(self->_listener), "tcp");
+                [self logOutside:[NSString stringWithFormat:@"Listener on port %u ready!",
+                    nw_listener_get_port(self->_listener)]];
             }
             else if (state == nw_listener_state_cancelled)
             {
                 // Release the primary reference on the listener
                 // that was taken at creation time
                 // TODO: Notify delegate. Recreate Listener.
+                [self logOutside:@"listener canceled. Try to restart."];
+                self->_inbound_connection = NULL;
+                self->_listener = nil;
+                [self start];
             }
         });
 
@@ -130,7 +135,7 @@
                 // and receiving on it.
                 self->_inbound_connection = connection;
 
-                [self startConnection:self->_inbound_connection];
+                [self startInboundConnection];
                 [self startSendReceiveLoop:self->_inbound_connection];
             }
         });
@@ -140,41 +145,45 @@
     return _listener != nil;
 }
 
-- (void)startConnection:(nw_connection_t)aConnection
+- (void)startInboundConnection
 {
-    nw_connection_set_queue(aConnection, _queue);
+    nw_connection_set_queue(_inbound_connection, _queue);
 
-    nw_connection_set_state_changed_handler(aConnection,
+    nw_connection_set_state_changed_handler(_inbound_connection,
         ^(nw_connection_state_t state, nw_error_t error)
         {
-            nw_endpoint_t remote = nw_connection_copy_endpoint(aConnection);
+            nw_endpoint_t remote = nw_connection_copy_endpoint(self->_inbound_connection);
             errno = error ? nw_error_get_error_code(error) : 0;
             if (state == nw_connection_state_waiting)
             {
-                warn("connect to %s port %u (%s) failed, is waiting",
+                [self logOutside:[NSString stringWithFormat:
+                    @"connect to %s port %u failed, is waiting. Error: %d",
                     nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote), "tcp");
+                    nw_endpoint_get_port(remote), errno]];
             }
             else if (state == nw_connection_state_failed)
             {
-                warn("connect to %s port %u (%s) failed",
+                [self logOutside:[NSString stringWithFormat:
+                    @"connect to %s port %u failed. Error: %d",
                     nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote), "tcp");
+                    nw_endpoint_get_port(remote), errno]];
             }
             else if (state == nw_connection_state_ready)
             {
-                fprintf(stderr, "Connection to %s port %u (%s) succeeded!\n",
+                [self logOutside:[NSString stringWithFormat:
+                    @"Connection to %s port %u succeeded!",
                     nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote), "tcp");
+                    nw_endpoint_get_port(remote)]];
             }
             else if (state == nw_connection_state_cancelled)
             {
                 // Release the primary reference on the connection
                 // that was taken at creation time
+                self->_inbound_connection = NULL;
             }
         });
 
-    nw_connection_start(aConnection);
+    nw_connection_start(_inbound_connection);
 }
 
 - (void)startSendReceiveLoop:(nw_connection_t)aConnection
@@ -193,8 +202,7 @@
         {
             if (stdin_error != 0)
             {
-                errno = stdin_error;
-                warn("stdin read error");
+                [self logOutside:[NSString stringWithFormat:@"stdin read error: %d", stdin_error]];
             }
             else if (read_data == NULL)
             {
@@ -206,8 +214,8 @@
                     {
                         if (error != NULL)
                         {
-                            errno = nw_error_get_error_code(error);
-                            warn("write close error");
+                            [self logOutside:[NSString stringWithFormat:@"write close error: %d",
+                                nw_error_get_error_code(error)]];
                         }
                         // Stop reading from stdin, so don't schedule another send_loop
                     });
@@ -221,8 +229,8 @@
                     {
                         if (error != NULL)
                         {
-                            errno = nw_error_get_error_code(error);
-                            warn("send error");
+                            [self logOutside:[NSString stringWithFormat:@"send error: %d",
+                                nw_error_get_error_code(error)]];
                         }
                         else
                         {
@@ -254,12 +262,12 @@
             if (is_complete &&
                 (context == NULL || nw_content_context_get_is_final(context)))
             {
-                exit(0);
+                [self logOutside:@"client disconnected. reset inbound connection;"];
+                self->_inbound_connection = NULL;
             }
-
-            // If there was no error in receiving, request more data
-            if (receive_error == NULL)
+            else if (receive_error == NULL)
             {
+                // If there was no error in receiving, request more data
                 [self receiveLoop:aConnection];
             }
         });
