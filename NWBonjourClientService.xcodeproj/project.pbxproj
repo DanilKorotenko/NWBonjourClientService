@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DA16549C29101CC900C756D2 /* BonjourListenerAdapter.mm in Sources */ = {isa = PBXBuildFile; fileRef = DA85D7BF29101AA600B8CE27 /* BonjourListenerAdapter.mm */; };
+		DA16549C29101CC900C756D2 /* BonjourListenerRef.mm in Sources */ = {isa = PBXBuildFile; fileRef = DA85D7BF29101AA600B8CE27 /* BonjourListenerRef.mm */; };
 		DA40D169290806BD00436992 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA40D168290806BD00436992 /* main.m */; };
 		DA63A5912906DB7900E756BC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA63A5902906DB7900E756BC /* main.m */; };
 		DACAF0BE290C060D00A614D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; };
@@ -45,8 +45,8 @@
 		DA40D168290806BD00436992 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		DA63A58D2906DB7900E756BC /* NWBonjourService */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NWBonjourService; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA63A5902906DB7900E756BC /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		DA85D7BE29101AA600B8CE27 /* BonjourListenerAdapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BonjourListenerAdapter.h; sourceTree = "<group>"; };
-		DA85D7BF29101AA600B8CE27 /* BonjourListenerAdapter.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BonjourListenerAdapter.mm; sourceTree = "<group>"; };
+		DA85D7BE29101AA600B8CE27 /* BonjourListenerRef.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BonjourListenerRef.h; sourceTree = "<group>"; };
+		DA85D7BF29101AA600B8CE27 /* BonjourListenerRef.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BonjourListenerRef.mm; sourceTree = "<group>"; };
 		DACAF0BB290BFEBB00A614D2 /* BonjourConnection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BonjourConnection.h; sourceTree = "<group>"; };
 		DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BonjourConnection.m; sourceTree = "<group>"; };
 		DACAF0C3290C0A0F00A614D2 /* BonjourServiceApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BonjourServiceApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -96,8 +96,8 @@
 		DA40D17929094DD400436992 /* Bonjour */ = {
 			isa = PBXGroup;
 			children = (
-				DA85D7BE29101AA600B8CE27 /* BonjourListenerAdapter.h */,
-				DA85D7BF29101AA600B8CE27 /* BonjourListenerAdapter.mm */,
+				DA85D7BE29101AA600B8CE27 /* BonjourListenerRef.h */,
+				DA85D7BF29101AA600B8CE27 /* BonjourListenerRef.mm */,
 				DAFFC1D4290BF1DF00DB1B90 /* BonjourListener.h */,
 				DAFFC1D5290BF1DF00DB1B90 /* BonjourListener.m */,
 				DACAF0BB290BFEBB00A614D2 /* BonjourConnection.h */,
@@ -269,7 +269,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAFFC1D6290BF1DF00DB1B90 /* BonjourListener.m in Sources */,
-				DA16549C29101CC900C756D2 /* BonjourListenerAdapter.mm in Sources */,
+				DA16549C29101CC900C756D2 /* BonjourListenerRef.mm in Sources */,
 				DA63A5912906DB7900E756BC /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
