@@ -10,22 +10,6 @@
 #import <err.h>
 #import "BonjourListenerRef.h"
 
-//@implementation Delegate
-//
-//- (void)advertisedEndpointChanged:(NSString *)message
-//{
-//    NSLog(@"%@", message);
-//}
-//
-//- (void)dataReceived:(NSData *)aData
-//{
-//    NSString *str = [[NSString alloc] initWithData:aData encoding:NSUTF8StringEncoding];
-//
-//    NSLog(@"a message from client: %@", str);
-//}
-//
-//@end
-
 static BNJListenerRef listenerRef = NULL;
 
 int main(int argc, const char * argv[])
@@ -48,7 +32,13 @@ int main(int argc, const char * argv[])
                 NSLog(@"%s", aLogMessage);
             });
 
-//        [listener start];
+        BNJListenerSetStringReceivedBlock(listenerRef,
+            ^(const char *aStringReceivedMessage)
+            {
+                NSLog(@"%s", aStringReceivedMessage);
+            });
+
+        BNJListenerStart(listenerRef);
     }
 
     dispatch_main();
