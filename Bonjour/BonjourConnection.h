@@ -1,9 +1,3 @@
-//
-//  BonjourConnection.h
-//  NWBonjourService
-//
-//  Created by Danil Korotenko on 10/28/22.
-//
 
 #import <Foundation/Foundation.h>
 

@@ -1,9 +1,3 @@
-//
-//  BonjourConnection.m
-//  NWBonjourService
-//
-//  Created by Danil Korotenko on 10/28/22.
-//
 
 #import "BonjourConnection.h"
 #import <Network/Network.h>

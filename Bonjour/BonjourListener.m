@@ -1,9 +1,3 @@
-//
-//  BonjourListener.m
-//  NWBonjourService
-//
-//  Created by Danil Korotenko on 10/28/22.
-//
 
 #import "BonjourListener.h"
 #import <Network/Network.h>
@@ -22,6 +16,8 @@
     nw_listener_t       _listener;
     nw_connection_t     _inbound_connection;
     dispatch_queue_t    _queue;
+    void (^_logBlock)(const char *aLogMessage);
+    void (^_stringReceivedBlock)(const char *aStringReceivedMessage);
 }
 
 + (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType
@@ -52,6 +48,18 @@
     return self;
 }
 
+- (void)setLogBlock:(void (^)(const char *aLogMessage))aLogBlock
+{
+    _logBlock = aLogBlock;
+}
+
+- (void)setStringReceivedBlock:(void (^)(const char *aStringReceived))aStringReceivedBlock
+{
+    _stringReceivedBlock = aStringReceivedBlock;
+}
+
+#pragma mark -
+
 - (BOOL)start
 {
     nw_parameters_t parameters = nw_parameters_create_secure_tcp(NW_PARAMETERS_DISABLE_PROTOCOL,
@@ -76,7 +84,7 @@
                 nw_endpoint_get_bonjour_service_name(advertised_endpoint),
                 self.type.UTF8String,
                 self.domain.UTF8String];
-            [self.delegate advertisedEndpointChanged:message];
+            [self logOutside:message];
         });
 
     nw_listener_set_queue(_listener, _queue);
@@ -236,7 +244,9 @@
             {
                 // If there is content, write it to stdout asynchronously
                 NSData *data = (NSData *)content;
-                [self.delegate dataReceived:data];
+                NSString *stringRecieved = [[NSString alloc] initWithData:data
+                    encoding:NSUTF8StringEncoding];
+                [self stringReceived:stringRecieved];
             }
 
             // If the context is marked as complete, and is the final context,
@@ -253,6 +263,24 @@
                 [self receiveLoop:aConnection];
             }
         });
+}
+
+#pragma mark -
+
+- (void)logOutside:(NSString *)aLogMessage
+{
+    if (_logBlock)
+    {
+        _logBlock([aLogMessage UTF8String]);
+    }
+}
+
+- (void)stringReceived:(NSString *)aStringReceived
+{
+    if (_stringReceivedBlock)
+    {
+        _stringReceivedBlock([aStringReceived UTF8String]);
+    }
 }
 
 @end

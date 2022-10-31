@@ -8,30 +8,26 @@
 #import <Foundation/Foundation.h>
 #import <Network/Network.h>
 #import <err.h>
-#import "BonjourListener.h"
+#import "BonjourListenerAdapter.h"
 
-@interface Delegate : NSObject<BonjourListenerDelegate>
 
-@end
+//@implementation Delegate
+//
+//- (void)advertisedEndpointChanged:(NSString *)message
+//{
+//    NSLog(@"%@", message);
+//}
+//
+//- (void)dataReceived:(NSData *)aData
+//{
+//    NSString *str = [[NSString alloc] initWithData:aData encoding:NSUTF8StringEncoding];
+//
+//    NSLog(@"a message from client: %@", str);
+//}
+//
+//@end
 
-@implementation Delegate
-
-- (void)advertisedEndpointChanged:(NSString *)message
-{
-    NSLog(@"%@", message);
-}
-
-- (void)dataReceived:(NSData *)aData
-{
-    NSString *str = [[NSString alloc] initWithData:aData encoding:NSUTF8StringEncoding];
-
-    NSLog(@"a message from client: %@", str);
-}
-
-@end
-
-static Delegate *listenerDelegate = nil;
-static BonjourListener *listener = nil;
+static BNJListenerControllerRef listenerRef = NULL;
 
 int main(int argc, const char * argv[])
 {
@@ -39,20 +35,17 @@ int main(int argc, const char * argv[])
     {
         NSLog(@"Hello, Bonjour service!");
 
-        listenerDelegate = [[Delegate alloc] init];
+        listenerRef = BNJCreateControllerWith(CFSTR("danilkorotenko.hellobonjour"),
+            CFSTR("_exampleService._tcp"), CFSTR("local"));
 
-        listener = [[BonjourListener alloc]
-            initWithName:@"danilkorotenko.hellobonjour" type:@"_exampleService._tcp"
-            domain:@"local"];
+//        listener.delegate = listenerDelegate;
 
-        listener.delegate = listenerDelegate;
-
-        if (listener == nil)
+        if (listenerRef == NULL)
         {
             err(1, NULL);
         }
 
-        [listener start];
+//        [listener start];
     }
 
     dispatch_main();
