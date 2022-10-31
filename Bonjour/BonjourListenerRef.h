@@ -10,12 +10,14 @@
 typedef struct
 {
     void *_bnjListenerController;
-} BNJListenerController;
+} BNJListener;
 
-typedef BNJListenerController* BNJListenerControllerRef;
+typedef BNJListener* BNJListenerRef;
 
-BNJListenerControllerRef BNJCreateControllerWith(CFStringRef aName, CFStringRef aType,
-    CFStringRef aDomain);
+BNJListenerRef BNJListenerCreateWith(CFStringRef aName, CFStringRef aType, CFStringRef aDomain);
+
+void BNJListenerSetLogBlock(BNJListenerRef aListenerRef,
+    void (^aBlock)(const char *aLogMessage));
 
 #ifdef __cplusplus
   }

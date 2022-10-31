@@ -8,8 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <Network/Network.h>
 #import <err.h>
-#import "BonjourListenerAdapter.h"
-
+#import "BonjourListenerRef.h"
 
 //@implementation Delegate
 //
@@ -27,7 +26,7 @@
 //
 //@end
 
-static BNJListenerControllerRef listenerRef = NULL;
+static BNJListenerRef listenerRef = NULL;
 
 int main(int argc, const char * argv[])
 {
@@ -35,15 +34,19 @@ int main(int argc, const char * argv[])
     {
         NSLog(@"Hello, Bonjour service!");
 
-        listenerRef = BNJCreateControllerWith(CFSTR("danilkorotenko.hellobonjour"),
+        listenerRef = BNJListenerCreateWith(CFSTR("danilkorotenko.hellobonjour"),
             CFSTR("_exampleService._tcp"), CFSTR("local"));
-
-//        listener.delegate = listenerDelegate;
 
         if (listenerRef == NULL)
         {
             err(1, NULL);
         }
+
+        BNJListenerSetLogBlock(listenerRef,
+            ^(const char *aLogMessage)
+            {
+                NSLog(@"%s", aLogMessage);
+            });
 
 //        [listener start];
     }

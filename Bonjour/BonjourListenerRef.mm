@@ -1,8 +1,8 @@
 
-#import "BonjourListenerAdapter.h"
+#import "BonjourListenerRef.h"
 #import "BonjourListener.h"
 
-BNJListenerControllerRef BNJCreateControllerWith(CFStringRef aName, CFStringRef aType,
+BNJListenerRef BNJListenerCreateWith(CFStringRef aName, CFStringRef aType,
     CFStringRef aDomain)
 {
     NSString *name = (NSString *)CFBridgingRelease(aName);
@@ -11,13 +11,20 @@ BNJListenerControllerRef BNJCreateControllerWith(CFStringRef aName, CFStringRef 
 
     BonjourListener *listener = [[BonjourListener alloc] initWithName:name type:type domain:domain];
 
-    BNJListenerControllerRef listenerRef = (BNJListenerControllerRef)malloc(sizeof(BNJListenerController));
+    BNJListenerRef listenerRef = (BNJListenerRef)malloc(sizeof(BNJListener));
     listenerRef->_bnjListenerController = (__bridge void *)listener;
 
     return listenerRef;
 }
 
-void BNJListenerControllerReleaseAndMakeNull(BNJListenerControllerRef *aListenerRef)
+void BNJListenerSetLogBlock(BNJListenerRef aListenerRef,
+    void (^aBlock)(const char *aLogMessage))
+{
+    BonjourListener *listener = (__bridge BonjourListener *)aListenerRef->_bnjListenerController;
+    [listener setLogBlock:aBlock];
+}
+
+void BNJListenerControllerReleaseAndMakeNull(BNJListenerRef *aListenerRef)
 {
     free(*aListenerRef);
     *aListenerRef = NULL;
