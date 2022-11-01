@@ -9,11 +9,11 @@
 
 @implementation BonjourObject
 {
-    void (^_logBlock)(const char *aLogMessage);
-    void (^_stringReceivedBlock)(const char *aStringReceivedMessage);
+    void (^_logBlock)(NSString *aLogMessage);
+    void (^_stringReceivedBlock)(NSString *aStringReceivedMessage);
 }
 
-- (void)setLogBlock:(void (^)(const char *aLogMessage))aLogBlock
+- (void)setLogBlock:(void (^)(NSString *aLogMessage))aLogBlock
 {
     _logBlock = aLogBlock;
 }
@@ -22,11 +22,11 @@
 {
     if (_logBlock)
     {
-        _logBlock([aLogMessage UTF8String]);
+        _logBlock(aLogMessage);
     }
 }
 
-- (void)setStringReceivedBlock:(void (^)(const char *aStringReceived))aStringReceivedBlock
+- (void)setStringReceivedBlock:(void (^)(NSString *aStringReceived))aStringReceivedBlock
 {
     _stringReceivedBlock = aStringReceivedBlock;
 }
@@ -35,7 +35,7 @@
 {
     if (_stringReceivedBlock)
     {
-        _stringReceivedBlock([aStringReceived UTF8String]);
+        _stringReceivedBlock(aStringReceived);
     }
 }
 

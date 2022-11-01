@@ -18,17 +18,28 @@ BNJListenerRef BNJListenerCreateWith(CFStringRef aName, CFStringRef aType,
 }
 
 void BNJListenerSetLogBlock(BNJListenerRef aListenerRef,
-    void (^aBlock)(const char *aLogMessage))
+    void (^aBlock)(CFStringRef aLogMessage))
 {
     BonjourListener *listener = (__bridge BonjourListener *)aListenerRef->_bnjListenerController;
-    [listener setLogBlock:aBlock];
+    [listener setLogBlock:
+        ^(NSString * _Nonnull aLogMessage)
+        {
+            CFStringRef logMessageRef = (CFStringRef)CFBridgingRetain(aLogMessage);
+            aBlock(logMessageRef);
+            CFRelease(logMessageRef);
+        }];
 }
 
 void BNJListenerSetStringReceivedBlock(BNJListenerRef aListenerRef,
-    void (^aBlock)(const char *aStringReceivedMessage))
+    void (^aBlock)(CFStringRef aStringReceivedMessage))
 {
     BonjourListener *listener = (__bridge BonjourListener *)aListenerRef->_bnjListenerController;
-    [listener setStringReceivedBlock:aBlock];
+    [listener setStringReceivedBlock:^(NSString * _Nonnull aStringReceived)
+        {
+            CFStringRef stringReceivedRef = (CFStringRef)CFBridgingRetain(aStringReceived);
+            aBlock(stringReceivedRef);
+            CFRelease(stringReceivedRef);
+        }];
 }
 
 void BNJListenerStart(BNJListenerRef aListenerRef)

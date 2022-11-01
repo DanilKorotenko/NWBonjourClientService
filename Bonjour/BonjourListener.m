@@ -124,14 +124,14 @@
                 self.inboundConnection = [[BonjourConnection alloc] initWithConnection:connection];
 
                 [self.inboundConnection setLogBlock:
-                    ^(const char * _Nonnull aLogMessage)
+                    ^(NSString * _Nonnull aLogMessage)
                     {
-                        [weakSelf logOutside:[NSString stringWithUTF8String:aLogMessage]];
+                        [weakSelf logOutside:aLogMessage];
                     }];
                 [self.inboundConnection setStringReceivedBlock:
-                    ^(const char * _Nonnull aStringReceived)
+                    ^(NSString * _Nonnull aStringReceived)
                     {
-                        [weakSelf stringReceived:[NSString stringWithUTF8String:aStringReceived]];
+                        [weakSelf stringReceived:aStringReceived];
                     }];
                 [self.inboundConnection setConnectionCanceledBlock:
                     ^{

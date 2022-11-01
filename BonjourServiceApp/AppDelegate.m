@@ -35,16 +35,16 @@
     __weak typeof(self) weakSelf = self;
 
     [self.listener setLogBlock:
-        ^(const char * _Nonnull aLogMessage)
+        ^(NSString * _Nonnull aLogMessage)
         {
             [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
-                withObject:[NSString stringWithUTF8String:aLogMessage] waitUntilDone:NO];
+                withObject:aLogMessage waitUntilDone:NO];
         }];
     [self.listener setStringReceivedBlock:
-        ^(const char * _Nonnull aStringReceived)
+        ^(NSString * _Nonnull aStringReceived)
         {
             [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
-                withObject:[NSString stringWithUTF8String:aStringReceived] waitUntilDone:NO];
+                withObject:aStringReceived waitUntilDone:NO];
         }];
 
     [self.listener start];

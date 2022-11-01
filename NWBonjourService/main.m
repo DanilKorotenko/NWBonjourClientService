@@ -27,15 +27,17 @@ int main(int argc, const char * argv[])
         }
 
         BNJListenerSetLogBlock(listenerRef,
-            ^(const char *aLogMessage)
+            ^(CFStringRef aLogMessage)
             {
-                NSLog(@"%s", aLogMessage);
+                NSString *logMessage = (__bridge NSString *)(aLogMessage);
+                NSLog(@"%@", logMessage);
             });
 
         BNJListenerSetStringReceivedBlock(listenerRef,
-            ^(const char *aStringReceivedMessage)
+            ^(CFStringRef aStringReceivedMessage)
             {
-                NSLog(@"%s", aStringReceivedMessage);
+                NSString *stringReceived = (__bridge NSString *)(aStringReceivedMessage);
+                NSLog(@"%@", stringReceived);
             });
 
         BNJListenerStart(listenerRef);

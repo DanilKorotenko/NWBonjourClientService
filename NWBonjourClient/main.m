@@ -23,14 +23,14 @@ void setupConnection(void)
     }
 
     [connection setLogBlock:
-        ^(const char * _Nonnull aLogMessage)
+        ^(NSString * _Nonnull aLogMessage)
         {
-            NSLog(@"%s", aLogMessage);
+            NSLog(@"%@", aLogMessage);
         }];
     [connection setStringReceivedBlock:
-        ^(const char * _Nonnull aStringReceived)
+        ^(NSString * _Nonnull aStringReceived)
         {
-            NSLog(@"%s", aStringReceived);
+            NSLog(@"%@", aStringReceived);
         }];
     [connection setConnectionCanceledBlock:
         ^{

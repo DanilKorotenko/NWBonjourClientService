@@ -11,10 +11,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface BonjourObject : NSObject
 
-- (void)setLogBlock:(void (^)(const char *aLogMessage))aLogBlock;
+- (void)setLogBlock:(void (^)(NSString *aLogMessage))aLogBlock;
 - (void)logOutside:(NSString *)aLogMessage;
 
-- (void)setStringReceivedBlock:(void (^)(const char *aStringReceived))aStringReceivedBlock;
+- (void)setStringReceivedBlock:(void (^)(NSString *aStringReceived))aStringReceivedBlock;
 - (void)stringReceived:(NSString *)aStringReceived;
 
 @end

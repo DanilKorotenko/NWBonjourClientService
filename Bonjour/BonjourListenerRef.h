@@ -17,10 +17,10 @@ typedef BNJListener* BNJListenerRef;
 BNJListenerRef BNJListenerCreateWith(CFStringRef aName, CFStringRef aType, CFStringRef aDomain);
 
 void BNJListenerSetLogBlock(BNJListenerRef aListenerRef,
-    void (^aBlock)(const char *aLogMessage));
+    void (^aBlock)(CFStringRef aLogMessage));
 
 void BNJListenerSetStringReceivedBlock(BNJListenerRef aListenerRef,
-    void (^aBlock)(const char *aStringReceivedMessage));
+    void (^aBlock)(CFStringRef aStringReceivedMessage));
 
 void BNJListenerStart(BNJListenerRef aListenerRef);
 
