@@ -149,4 +149,9 @@
     return _listener != nil;
 }
 
+- (void)send:(NSString *)aStringToSend
+{
+    [self.inboundConnection send:aStringToSend];
+}
+
 @end

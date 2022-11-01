@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain;
 
 - (BOOL)start;
+- (void)send:(NSString *)aStringToSend;
 
 @end
 
