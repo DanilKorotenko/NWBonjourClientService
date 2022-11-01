@@ -68,6 +68,7 @@
     self = [super init];
     if (self)
     {
+        _queue = dispatch_queue_create("BonjourConnection.queue", NULL);
         _connection = aConnection;
     }
     return self;

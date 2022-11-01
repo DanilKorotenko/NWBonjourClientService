@@ -32,6 +32,8 @@
 		DA1654CC2911447B00C756D2 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654BF291143A700C756D2 /* BonjourObject.m */; };
 		DA1654CD2911448800C756D2 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654BF291143A700C756D2 /* BonjourObject.m */; };
 		DA1654CE291144CC00C756D2 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654BF291143A700C756D2 /* BonjourObject.m */; };
+		DA1654CF2911668800C756D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; };
+		DA1654D02911668F00C756D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; };
 		DA40D169290806BD00436992 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA40D168290806BD00436992 /* main.m */; };
 		DA63A5912906DB7900E756BC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA63A5902906DB7900E756BC /* main.m */; };
 		DACAF0BE290C060D00A614D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; };
@@ -401,6 +403,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA1654CD2911448800C756D2 /* BonjourObject.m in Sources */,
+				DA1654CF2911668800C756D2 /* BonjourConnection.m in Sources */,
 				DAFFC1D6290BF1DF00DB1B90 /* BonjourListener.m in Sources */,
 				DA16549C29101CC900C756D2 /* BonjourListenerRef.mm in Sources */,
 				DA63A5912906DB7900E756BC /* main.m in Sources */,
@@ -412,6 +415,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA1654CC2911447B00C756D2 /* BonjourObject.m in Sources */,
+				DA1654D02911668F00C756D2 /* BonjourConnection.m in Sources */,
 				DACAF0D3290C1D8000A614D2 /* BonjourListener.m in Sources */,
 				DACAF0CE290C0A1000A614D2 /* main.m in Sources */,
 				DACAF0C7290C0A0F00A614D2 /* AppDelegate.m in Sources */,
