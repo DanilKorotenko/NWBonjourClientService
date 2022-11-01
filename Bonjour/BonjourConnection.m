@@ -14,6 +14,7 @@
 @implementation BonjourConnection
 {
     nw_connection_t _connection;
+    dispatch_queue_t    _queue;
     void (^_connectionCanceledBlock)(void);
 }
 
@@ -40,6 +41,8 @@
         self.name = aName;
         self.type = aType;
         self.domain = aDomain;
+
+        _queue = dispatch_queue_create("BonjourConnection.queue", NULL);
 
         // If we are using bonjour to connect, treat the name as a bonjour name
         // Otherwise, treat the name as a hostname
@@ -79,7 +82,7 @@
 
 - (void)start
 {
-    nw_connection_set_queue(_connection, dispatch_get_main_queue());
+    nw_connection_set_queue(_connection, _queue);
 
     nw_connection_set_state_changed_handler(_connection,
         ^(nw_connection_state_t state, nw_error_t error)
@@ -127,7 +130,7 @@
 
 - (void)sendLoop
 {
-    dispatch_read(STDIN_FILENO, 8192, dispatch_get_main_queue(),
+    dispatch_read(STDIN_FILENO, 8192, _queue,
         ^(dispatch_data_t _Nonnull read_data, int stdin_error)
         {
             if (stdin_error != 0)
@@ -201,7 +204,7 @@
             if (content != NULL)
             {
                 // If there is content, write it to stdout asynchronously
-                dispatch_write(STDOUT_FILENO, content, dispatch_get_main_queue(),
+                dispatch_write(STDOUT_FILENO, content, self->_queue,
                     ^(__unused dispatch_data_t _Nullable data, int stdout_error)
                     {
                         if (stdout_error != 0)
