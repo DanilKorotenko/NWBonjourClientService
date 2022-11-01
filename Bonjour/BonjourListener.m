@@ -140,7 +140,10 @@
                     }];
 
                 [self.inboundConnection start];
-                [self.inboundConnection startSendRecieveLoop];
+                if (self.sendFromStdIn)
+                {
+                    [self.inboundConnection startSend];
+                }
             }
         });
 

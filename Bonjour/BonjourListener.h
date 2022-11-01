@@ -9,6 +9,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType
     domain:(NSString *)aDomain;
 
+@property(readwrite) BOOL sendFromStdIn;
+
 - (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain;
 
 - (BOOL)start;

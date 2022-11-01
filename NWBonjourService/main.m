@@ -40,6 +40,8 @@ int main(int argc, const char * argv[])
                 NSLog(@"%@", stringReceived);
             });
 
+        BNJListenerSetSendFromStdIn(listenerRef, true);
+
         BNJListenerStart(listenerRef);
     }
 

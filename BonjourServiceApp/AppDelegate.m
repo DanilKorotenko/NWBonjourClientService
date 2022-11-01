@@ -50,11 +50,6 @@
     [self.listener start];
 }
 
-- (void)applicationWillTerminate:(NSNotification *)aNotification
-{
-
-}
-
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app
 {
     return YES;
@@ -70,6 +65,8 @@
 - (IBAction)sendToClient:(id)sender
 {
     NSString *textToSend = self.inputField.stringValue;
+
+    [self.listener send:textToSend];
 
     self.inputField.stringValue = @"";
 }

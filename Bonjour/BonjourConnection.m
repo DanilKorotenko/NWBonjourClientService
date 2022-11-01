@@ -27,7 +27,7 @@
     if (nil != result)
     {
         [result start];
-        [result startSendRecieveLoop];
+        [result startSend];
     }
 
     return result;
@@ -128,15 +128,15 @@
         });
 
     nw_connection_start(_connection);
-}
-
-- (void)startSendRecieveLoop
-{
-    // Start reading from stdin
-    [self sendLoop];
 
     // Start reading from connection
     [self receiveLoop];
+}
+
+- (void)startSend
+{
+    // Start reading from stdin
+    [self sendLoop];
 }
 
 - (void)cancel

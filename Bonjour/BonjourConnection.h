@@ -14,8 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithConnection:(nw_connection_t)aConnection;
 
 - (void)start;
-- (void)startSendRecieveLoop;
-- (void)receiveLoop;
+- (void)startSend;
 - (void)cancel;
 
 - (void)send:(NSString *)aStringToSend;

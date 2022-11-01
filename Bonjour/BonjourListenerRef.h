@@ -22,6 +22,8 @@ void BNJListenerSetLogBlock(BNJListenerRef aListenerRef,
 void BNJListenerSetStringReceivedBlock(BNJListenerRef aListenerRef,
     void (^aBlock)(CFStringRef aStringReceivedMessage));
 
+void BNJListenerSetSendFromStdIn(BNJListenerRef aListenerRef, bool aFlag);
+
 void BNJListenerStart(BNJListenerRef aListenerRef);
 
 #ifdef __cplusplus

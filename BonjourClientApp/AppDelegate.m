@@ -92,7 +92,6 @@
             [weakSelf setupConnection];
         }];
     [self.connection start];
-    [self.connection receiveLoop];
 }
 
 @end
