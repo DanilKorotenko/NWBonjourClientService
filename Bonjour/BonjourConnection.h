@@ -1,6 +1,7 @@
 
 #import <Foundation/Foundation.h>
 #import "BonjourObject.h"
+#import <Network/Network.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -10,9 +11,11 @@ NS_ASSUME_NONNULL_BEGIN
     domain:(NSString *)aDomain;
 
 - (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain;
+- (instancetype)initWithConnection:(nw_connection_t)aConnection;
 
 - (void)start;
 - (void)startSendRecieveLoop;
+- (void)cancel;
 
 - (void)setConnectionCanceledBlock:(void (^)(void))aConnectionCanceledBlock;
 - (void)connectionCanceled;

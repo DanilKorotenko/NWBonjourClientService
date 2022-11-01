@@ -63,6 +63,16 @@
     return self;
 }
 
+- (instancetype)initWithConnection:(nw_connection_t)aConnection
+{
+    self = [super init];
+    if (self)
+    {
+        _connection = aConnection;
+    }
+    return self;
+}
+
 #pragma mark -
 
 - (void)setConnectionCanceledBlock:(void (^)(void))aConnectionCanceledBlock
@@ -128,6 +138,11 @@
     [self receiveLoop];
 }
 
+- (void)cancel
+{
+    nw_connection_cancel(_connection);
+}
+
 - (void)sendLoop
 {
     dispatch_read(STDIN_FILENO, 8192, _queue,
@@ -183,45 +198,27 @@
         ^(dispatch_data_t content, nw_content_context_t context, bool is_complete,
             nw_error_t receive_error)
         {
-            dispatch_block_t schedule_next_receive =
-                ^{
-                    // If the context is marked as complete, and is the final context,
-                    // we're read-closed.
-                    if (is_complete &&
-                        (context == NULL || nw_content_context_get_is_final(context)))
-                    {
-                        [self logOutside:@"server disconnected. reset connection;"];
-                        [self connectionCanceled];
-                    }
-
-                    // If there was no error in receiving, request more data
-                    if (receive_error == NULL)
-                    {
-                        [self receiveLoop];
-                    }
-                };
-
             if (content != NULL)
             {
                 // If there is content, write it to stdout asynchronously
-                dispatch_write(STDOUT_FILENO, content, self->_queue,
-                    ^(__unused dispatch_data_t _Nullable data, int stdout_error)
-                    {
-                        if (stdout_error != 0)
-                        {
-                            [self logOutside:[NSString stringWithFormat:
-                                @"stdout write error: %d", stdout_error]];
-                        }
-                        else
-                        {
-                            schedule_next_receive();
-                        }
-                    });
+                NSData *data = (NSData *)content;
+                NSString *stringRecieved = [[NSString alloc] initWithData:data
+                    encoding:NSUTF8StringEncoding];
+                [self stringReceived:stringRecieved];
             }
-            else
+
+            // If the context is marked as complete, and is the final context,
+            // we're read-closed.
+            if (is_complete &&
+                (context == NULL || nw_content_context_get_is_final(context)))
             {
-                // Content was NULL, so directly schedule the next receive
-                schedule_next_receive();
+                [self logOutside:@"server disconnected. reset connection;"];
+                [self connectionCanceled];
+            }
+            else if (receive_error == NULL)
+            {
+                // If there was no error in receiving, request more data
+                [self receiveLoop];
             }
         });
 }
