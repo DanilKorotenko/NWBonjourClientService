@@ -13,8 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)start;
 
-- (void)setStringReceivedBlock:(void (^)(const char *aStringReceived))aStringReceivedBlock;
-
 @end
 
 NS_ASSUME_NONNULL_END

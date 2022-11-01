@@ -14,6 +14,7 @@
 @implementation BonjourConnection
 {
     nw_connection_t _connection;
+    void (^_connectionCanceledBlock)(void);
 }
 
 + (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType
@@ -59,6 +60,23 @@
     return self;
 }
 
+#pragma mark -
+
+- (void)setConnectionCanceledBlock:(void (^)(void))aConnectionCanceledBlock
+{
+    _connectionCanceledBlock = aConnectionCanceledBlock;
+}
+
+- (void)connectionCanceled
+{
+    if (_connectionCanceledBlock)
+    {
+        _connectionCanceledBlock();
+    }
+}
+
+#pragma mark -
+
 - (void)start
 {
     nw_connection_set_queue(_connection, dispatch_get_main_queue());
@@ -70,26 +88,28 @@
             errno = error ? nw_error_get_error_code(error) : 0;
             if (state == nw_connection_state_waiting)
             {
-                warn("connect to %s port %u failed, is waiting",
+                [self logOutside:[NSString stringWithFormat:
+                    @"connect to %s port %u failed, is waiting",
                     nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote));
+                    nw_endpoint_get_port(remote)]];
             }
             else if (state == nw_connection_state_failed)
             {
-                warn("connect to %s port %u failed",
+                [self logOutside:[NSString stringWithFormat:
+                    @"connect to %s port %u failed",
                     nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote));
+                    nw_endpoint_get_port(remote)]];
             }
             else if (state == nw_connection_state_ready)
             {
-                fprintf(stderr, "Connection to %s port %u succeeded!\n",
+                [self logOutside:[NSString stringWithFormat:
+                    @"Connection to %s port %u succeeded!",
                     nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote));
+                    nw_endpoint_get_port(remote)]];
             }
             else if (state == nw_connection_state_cancelled)
             {
-                // Release the primary reference on the connection
-                // that was taken at creation time
+                [self connectionCanceled];
             }
         });
 
@@ -112,8 +132,8 @@
         {
             if (stdin_error != 0)
             {
-                errno = stdin_error;
-                warn("stdin read error");
+                [self logOutside:[NSString stringWithFormat:
+                    @"stdin read error: %d", stdin_error]];
             }
             else if (read_data == NULL)
             {
@@ -125,8 +145,8 @@
                     {
                         if (error != NULL)
                         {
-                            errno = nw_error_get_error_code(error);
-                            warn("write close error");
+                            [self logOutside:[NSString stringWithFormat:
+                                @"write close error: %d", nw_error_get_error_code(error)]];
                         }
                         // Stop reading from stdin, so don't schedule another send_loop
                     });
@@ -135,13 +155,14 @@
             {
                 // Every send is marked as complete. This has no effect with the default message context for TCP,
                 // but is required for UDP to indicate the end of a packet.
-                nw_connection_send(self->_connection, read_data, NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT, true,
+                nw_connection_send(self->_connection, read_data,
+                    NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT, true,
                     ^(nw_error_t  _Nullable error)
                     {
                         if (error != NULL)
                         {
-                            errno = nw_error_get_error_code(error);
-                            warn("send error");
+                            [self logOutside:[NSString stringWithFormat:
+                                @"send error: %d", nw_error_get_error_code(error)]];
                         }
                         else
                         {
@@ -166,7 +187,8 @@
                     if (is_complete &&
                         (context == NULL || nw_content_context_get_is_final(context)))
                     {
-                        exit(0);
+                        [self logOutside:@"server disconnected. reset connection;"];
+                        [self connectionCanceled];
                     }
 
                     // If there was no error in receiving, request more data
@@ -184,8 +206,8 @@
                     {
                         if (stdout_error != 0)
                         {
-                            errno = stdout_error;
-                            warn("stdout write error");
+                            [self logOutside:[NSString stringWithFormat:
+                                @"stdout write error: %d", stdout_error]];
                         }
                         else
                         {

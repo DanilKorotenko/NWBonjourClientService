@@ -10,6 +10,7 @@
 @implementation BonjourObject
 {
     void (^_logBlock)(const char *aLogMessage);
+    void (^_stringReceivedBlock)(const char *aStringReceivedMessage);
 }
 
 - (void)setLogBlock:(void (^)(const char *aLogMessage))aLogBlock
@@ -22,6 +23,19 @@
     if (_logBlock)
     {
         _logBlock([aLogMessage UTF8String]);
+    }
+}
+
+- (void)setStringReceivedBlock:(void (^)(const char *aStringReceived))aStringReceivedBlock
+{
+    _stringReceivedBlock = aStringReceivedBlock;
+}
+
+- (void)stringReceived:(NSString *)aStringReceived
+{
+    if (_stringReceivedBlock)
+    {
+        _stringReceivedBlock([aStringReceived UTF8String]);
     }
 }
 

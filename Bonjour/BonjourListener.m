@@ -16,7 +16,6 @@
     nw_listener_t       _listener;
     nw_connection_t     _inbound_connection;
     dispatch_queue_t    _queue;
-    void (^_stringReceivedBlock)(const char *aStringReceivedMessage);
 }
 
 + (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType
@@ -45,11 +44,6 @@
         _queue = dispatch_queue_create("BonjourService.queue", NULL);
     }
     return self;
-}
-
-- (void)setStringReceivedBlock:(void (^)(const char *aStringReceived))aStringReceivedBlock
-{
-    _stringReceivedBlock = aStringReceivedBlock;
 }
 
 #pragma mark -
@@ -265,16 +259,6 @@
                 [self receiveLoop:aConnection];
             }
         });
-}
-
-#pragma mark -
-
-- (void)stringReceived:(NSString *)aStringReceived
-{
-    if (_stringReceivedBlock)
-    {
-        _stringReceivedBlock([aStringReceived UTF8String]);
-    }
 }
 
 @end
