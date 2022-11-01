@@ -769,6 +769,9 @@
 DQ
 </string>
                         </buttonCell>
+                        <connections>
+                            <action selector="sendToClient:" target="Voe-Tx-rLC" id="dfa-XV-jiZ"/>
+                        </connections>
                     </button>
                     <scrollView fixedFrame="YES" borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7p9-xL-Icf">
                         <rect key="frame" x="20" y="60" width="440" height="232"/>

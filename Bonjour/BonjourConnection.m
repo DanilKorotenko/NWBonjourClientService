@@ -193,6 +193,22 @@
         });
 }
 
+- (void)send:(NSString *)aStringToSend
+{
+    dispatch_data_t data = [self dispatchDataFromNSString:aStringToSend];
+
+    nw_connection_send(self->_connection, data,
+        NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT, true,
+            ^(nw_error_t _Nullable error)
+            {
+                if (error != NULL)
+                {
+                    [self logOutside:[NSString stringWithFormat:
+                        @"send error: %d", nw_error_get_error_code(error)]];
+                }
+            });
+}
+
 - (void)receiveLoop
 {
     nw_connection_receive(self->_connection, 1, UINT32_MAX,
@@ -223,5 +239,24 @@
             }
         });
 }
+
+#pragma mark -
+
+- (dispatch_data_t)dispatchDataFromNSData:(NSData *)aData
+{
+    // just incase we are mutable;
+    CFDataRef immutableSelf = CFBridgingRetain([aData copy]);
+    return dispatch_data_create(aData.bytes, aData.length, _queue,
+        ^{
+            CFRelease(immutableSelf);
+        });
+}
+
+- (dispatch_data_t)dispatchDataFromNSString:(NSString *)aString
+{
+    NSData *data = [aString dataUsingEncoding:NSUTF8StringEncoding];
+    return [self dispatchDataFromNSData:data];
+}
+
 
 @end

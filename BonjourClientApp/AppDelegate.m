@@ -29,25 +29,7 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-//    self.listener = [[BonjourListener alloc] initWithName:@"danilkorotenko.hellobonjour"
-//        type:@"_exampleService._tcp" domain:@"local"];
-//
-//    __weak typeof(self) weakSelf = self;
-//
-//    [self.listener setLogBlock:
-//        ^(const char * _Nonnull aLogMessage)
-//        {
-//            [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
-//                withObject:[NSString stringWithUTF8String:aLogMessage] waitUntilDone:NO];
-//        }];
-//    [self.listener setStringReceivedBlock:
-//        ^(const char * _Nonnull aStringReceived)
-//        {
-//            [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
-//                withObject:[NSString stringWithUTF8String:aStringReceived] waitUntilDone:NO];
-//        }];
-//
-//    [self.listener start];
+    [self setupConnection];
 }
 
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app
@@ -66,6 +48,8 @@
 {
     NSString *textToSend = self.inputField.stringValue;
 
+    [self.connection send:textToSend];
+
     self.inputField.stringValue = @"";
 }
 
@@ -77,6 +61,38 @@
     [log appendString:aString];
     [log appendString:@"\n"];
     self.clientLog.string = log;
+}
+
+- (void)setupConnection
+{
+    self.connection = [[BonjourConnection alloc] initWithName:
+        @"danilkorotenko.hellobonjour" type:@"_exampleService._tcp" domain:@"local"];
+
+    if (self.connection == nil)
+    {
+        return;
+    }
+
+    __weak typeof(self) weakSelf = self;
+
+    [self.connection setLogBlock:
+        ^(NSString * _Nonnull aLogMessage)
+        {
+            [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
+                withObject:aLogMessage waitUntilDone:NO];
+        }];
+    [self.connection setStringReceivedBlock:
+        ^(NSString * _Nonnull aStringReceived)
+        {
+            [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
+                withObject:aStringReceived waitUntilDone:NO];
+        }];
+    [self.connection setConnectionCanceledBlock:
+        ^{
+            [weakSelf setupConnection];
+        }];
+    [self.connection start];
+    [self.connection receiveLoop];
 }
 
 @end

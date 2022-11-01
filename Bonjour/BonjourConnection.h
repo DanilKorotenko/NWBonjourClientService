@@ -15,7 +15,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)start;
 - (void)startSendRecieveLoop;
+- (void)receiveLoop;
 - (void)cancel;
+
+- (void)send:(NSString *)aStringToSend;
 
 - (void)setConnectionCanceledBlock:(void (^)(void))aConnectionCanceledBlock;
 - (void)connectionCanceled;
