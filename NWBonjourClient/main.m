@@ -17,7 +17,7 @@ int main(int argc, const char * argv[])
         NSLog(@"Hello, Bonjour client!");
         BonjourConnection *connection = [BonjourConnection createAndStartWithName:
             @"danilkorotenko.hellobonjour" type:@"_exampleService._tcp" domain:@"local"];
-//        nw_connection_t connection = create_outbound_connection("danilkorotenko.hellobonjour");
+
         if (connection == nil)
         {
             err(1, NULL);

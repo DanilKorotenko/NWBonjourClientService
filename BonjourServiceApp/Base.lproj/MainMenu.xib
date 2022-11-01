@@ -17,7 +17,7 @@
             <connections>
                 <outlet property="clientConnectedNo" destination="3H5-cg-Neh" id="670-Kv-5U4"/>
                 <outlet property="clientConnectedYes" destination="hLr-ZO-ljr" id="jwZ-wM-QQ7"/>
-                <outlet property="clientLog" destination="SqZ-fy-l3g" id="yI7-nU-qdM"/>
+                <outlet property="clientLog" destination="X2Q-IW-dbn" id="WXL-cQ-bs1"/>
                 <outlet property="inputField" destination="YHA-mV-PDS" id="x3X-co-hhB"/>
                 <outlet property="serviceUPNo" destination="j7f-Ht-fVR" id="qxn-LN-4gD"/>
                 <outlet property="serviceUPYes" destination="1zM-pL-CdG" id="KLO-F2-6u8"/>
@@ -750,15 +750,6 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SqZ-fy-l3g">
-                        <rect key="frame" x="20" y="51" width="440" height="241"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="mLb-Hr-DOI">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
                     <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YHA-mV-PDS">
                         <rect key="frame" x="20" y="20" width="371" height="21"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -779,6 +770,33 @@ DQ
 </string>
                         </buttonCell>
                     </button>
+                    <scrollView fixedFrame="YES" borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uxN-75-sBu">
+                        <rect key="frame" x="20" y="60" width="440" height="232"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <clipView key="contentView" drawsBackground="NO" id="jku-on-Rh3">
+                            <rect key="frame" x="0.0" y="0.0" width="425" height="232"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textView importsGraphics="NO" richText="NO" verticallyResizable="YES" smartInsertDelete="YES" id="X2Q-IW-dbn">
+                                    <rect key="frame" x="0.0" y="0.0" width="425" height="232"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <size key="minSize" width="425" height="232"/>
+                                    <size key="maxSize" width="425" height="10000000"/>
+                                    <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                </textView>
+                            </subviews>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="bOJ-gW-TbS">
+                            <rect key="frame" x="-100" y="-100" width="225" height="15"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" verticalHuggingPriority="750" horizontal="NO" id="x61-Kn-jls">
+                            <rect key="frame" x="425" y="0.0" width="15" height="232"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
                 </subviews>
             </view>
             <point key="canvasLocation" x="200" y="400"/>

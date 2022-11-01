@@ -18,7 +18,7 @@
 @property (strong) IBOutlet NSTextField *clientConnectedYes;
 @property (strong) IBOutlet NSTextField *clientConnectedNo;
 
-@property (strong) IBOutlet NSTextField *clientLog;
+@property (strong) IBOutlet NSTextView *clientLog;
 @property (strong) IBOutlet NSTextField *inputField;
 
 @property (strong) BonjourListener *listener;
@@ -32,7 +32,20 @@
     self.listener = [[BonjourListener alloc] initWithName:@"danilkorotenko.hellobonjour"
         type:@"_exampleService._tcp" domain:@"local"];
 
-    self.listener.delegate = self;
+    __weak typeof(self) weakSelf = self;
+
+    [self.listener setLogBlock:
+        ^(const char * _Nonnull aLogMessage)
+        {
+            [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
+                withObject:[NSString stringWithUTF8String:aLogMessage] waitUntilDone:NO];
+        }];
+    [self.listener setStringReceivedBlock:
+        ^(const char * _Nonnull aStringReceived)
+        {
+            [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
+                withObject:[NSString stringWithUTF8String:aStringReceived] waitUntilDone:NO];
+        }];
 
     [self.listener start];
 }
@@ -62,5 +75,13 @@
 }
 
 #pragma mark -
+
+- (void)appendToLog:(NSString *)aString
+{
+    NSMutableString *log = [NSMutableString stringWithString:self.clientLog.string];
+    [log appendString:aString];
+    [log appendString:@"\n"];
+    self.clientLog.string = log;
+}
 
 @end

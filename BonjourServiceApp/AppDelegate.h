@@ -8,8 +8,7 @@
 #import <Cocoa/Cocoa.h>
 #import "BonjourListener.h"
 
-@interface AppDelegate : NSObject <NSApplicationDelegate, BonjourListenerDelegate>
-
+@interface AppDelegate : NSObject <NSApplicationDelegate>
 
 @end
 
