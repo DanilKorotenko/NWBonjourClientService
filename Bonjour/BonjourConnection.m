@@ -70,21 +70,21 @@
             errno = error ? nw_error_get_error_code(error) : 0;
             if (state == nw_connection_state_waiting)
             {
-                warn("connect to %s port %u (%s) failed, is waiting",
+                warn("connect to %s port %u failed, is waiting",
                     nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote), "tcp");
+                    nw_endpoint_get_port(remote));
             }
             else if (state == nw_connection_state_failed)
             {
-                warn("connect to %s port %u (%s) failed",
+                warn("connect to %s port %u failed",
                     nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote), "tcp");
+                    nw_endpoint_get_port(remote));
             }
             else if (state == nw_connection_state_ready)
             {
-                fprintf(stderr, "Connection to %s port %u (%s) succeeded!\n",
+                fprintf(stderr, "Connection to %s port %u succeeded!\n",
                     nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote), "tcp");
+                    nw_endpoint_get_port(remote));
             }
             else if (state == nw_connection_state_cancelled)
             {

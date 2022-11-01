@@ -1,9 +1,10 @@
 
 #import <Foundation/Foundation.h>
+#import "BonjourObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface BonjourListener : NSObject
+@interface BonjourListener : BonjourObject
 
 + (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType
     domain:(NSString *)aDomain;
@@ -12,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)start;
 
-- (void)setLogBlock:(void (^)(const char *aLogMessage))aLogBlock;
 - (void)setStringReceivedBlock:(void (^)(const char *aStringReceived))aStringReceivedBlock;
 
 @end

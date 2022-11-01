@@ -16,7 +16,6 @@
     nw_listener_t       _listener;
     nw_connection_t     _inbound_connection;
     dispatch_queue_t    _queue;
-    void (^_logBlock)(const char *aLogMessage);
     void (^_stringReceivedBlock)(const char *aStringReceivedMessage);
 }
 
@@ -46,11 +45,6 @@
         _queue = dispatch_queue_create("BonjourService.queue", NULL);
     }
     return self;
-}
-
-- (void)setLogBlock:(void (^)(const char *aLogMessage))aLogBlock
-{
-    _logBlock = aLogBlock;
 }
 
 - (void)setStringReceivedBlock:(void (^)(const char *aStringReceived))aStringReceivedBlock
@@ -274,14 +268,6 @@
 }
 
 #pragma mark -
-
-- (void)logOutside:(NSString *)aLogMessage
-{
-    if (_logBlock)
-    {
-        _logBlock([aLogMessage UTF8String]);
-    }
-}
 
 - (void)stringReceived:(NSString *)aStringReceived
 {
