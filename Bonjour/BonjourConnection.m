@@ -9,6 +9,8 @@
 @property (strong) NSString *type;
 @property (strong) NSString *domain;
 
+@property (readwrite) BOOL isConnected;
+
 @end
 
 @implementation BonjourConnection
@@ -99,31 +101,55 @@
         ^(nw_connection_state_t state, nw_error_t error)
         {
             nw_endpoint_t remote = nw_connection_copy_endpoint(self->_connection);
-            errno = error ? nw_error_get_error_code(error) : 0;
-            if (state == nw_connection_state_waiting)
+            int errorCode = error ? nw_error_get_error_code(error) : 0;
+
+            switch (state)
             {
-                [self logOutside:[NSString stringWithFormat:
-                    @"connect to %s port %u failed, is waiting",
-                    nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote)]];
-            }
-            else if (state == nw_connection_state_failed)
-            {
-                [self logOutside:[NSString stringWithFormat:
-                    @"connect to %s port %u failed",
-                    nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote)]];
-            }
-            else if (state == nw_connection_state_ready)
-            {
-                [self logOutside:[NSString stringWithFormat:
-                    @"Connection to %s port %u succeeded!",
-                    nw_endpoint_get_hostname(remote),
-                    nw_endpoint_get_port(remote)]];
-            }
-            else if (state == nw_connection_state_cancelled)
-            {
-                [self connectionCanceled];
+                case nw_connection_state_invalid:
+                {
+                    self.isConnected = NO;
+                    break;
+                }
+                case nw_connection_state_waiting:
+                {
+                    self.isConnected = NO;
+                    [self logOutside:[NSString stringWithFormat:
+                        @"connect to %s port %u failed, is waiting. Error: %d",
+                        nw_endpoint_get_hostname(remote),
+                        nw_endpoint_get_port(remote), errorCode]];
+
+                    break;
+                }
+                case nw_connection_state_preparing:
+                {
+                    self.isConnected = NO;
+                    break;
+                }
+                case nw_connection_state_ready:
+                {
+                    self.isConnected = YES;
+                    [self logOutside:[NSString stringWithFormat:
+                        @"Connection to %s port %u succeeded!",
+                        nw_endpoint_get_hostname(remote),
+                        nw_endpoint_get_port(remote)]];
+                    break;
+                }
+                case nw_connection_state_failed:
+                {
+                    self.isConnected = NO;
+                    [self logOutside:[NSString stringWithFormat:
+                        @"connect to %s port %u failed. Error: %d",
+                        nw_endpoint_get_hostname(remote),
+                        nw_endpoint_get_port(remote), errorCode]];
+                    [self connectionCanceled];
+                    break;
+                }
+                case nw_connection_state_cancelled:
+                {
+                    self.isConnected = NO;
+                    [self connectionCanceled];
+                    break;
+                }
             }
         });
 

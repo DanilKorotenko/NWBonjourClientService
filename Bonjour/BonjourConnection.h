@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain;
 - (instancetype)initWithConnection:(nw_connection_t)aConnection;
 
+@property(readonly) BOOL isConnected;
+
 - (void)start;
 - (void)startSend;
 - (void)cancel;
