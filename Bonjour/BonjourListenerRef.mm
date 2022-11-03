@@ -25,8 +25,11 @@ void BNJListenerSetLogBlock(BNJListenerRef aListenerRef,
         ^(NSString * _Nonnull aLogMessage)
         {
             CFStringRef logMessageRef = (CFStringRef)CFBridgingRetain(aLogMessage);
-            aBlock(logMessageRef);
-            CFRelease(logMessageRef);
+            if (NULL != logMessageRef)
+            {
+                aBlock(logMessageRef);
+                CFRelease(logMessageRef);
+            }
         }];
 }
 
@@ -37,8 +40,11 @@ void BNJListenerSetStringReceivedBlock(BNJListenerRef aListenerRef,
     [listener setStringReceivedBlock:^(NSString * _Nonnull aStringReceived)
         {
             CFStringRef stringReceivedRef = (CFStringRef)CFBridgingRetain(aStringReceived);
-            aBlock(stringReceivedRef);
-            CFRelease(stringReceivedRef);
+            if (NULL != stringReceivedRef)
+            {
+                aBlock(stringReceivedRef);
+                CFRelease(stringReceivedRef);
+            }
         }];
 }
 
