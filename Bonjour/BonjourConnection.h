@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(readonly) BOOL isConnected;
 
 - (void)start;
-- (void)startSend;
+- (void)startSendFromStdIn;
 - (void)cancel;
 
 - (void)send:(NSString *)aStringToSend;

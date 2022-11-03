@@ -142,7 +142,7 @@
                 [self.inboundConnection start];
                 if (self.sendFromStdIn)
                 {
-                    [self.inboundConnection startSend];
+                    [self.inboundConnection startSendFromStdIn];
                 }
             }
         });

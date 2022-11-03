@@ -37,7 +37,7 @@ void setupConnection(void)
             setupConnection();
         }];
     [connection start];
-    [connection startSend];
+    [connection startSendFromStdIn];
 }
 
 int main(int argc, const char * argv[])

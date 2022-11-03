@@ -29,7 +29,7 @@
     if (nil != result)
     {
         [result start];
-        [result startSend];
+        [result startSendFromStdIn];
     }
 
     return result;
@@ -159,7 +159,7 @@
     [self receiveLoop];
 }
 
-- (void)startSend
+- (void)startSendFromStdIn
 {
     // Start reading from stdin
     [self sendLoop];
