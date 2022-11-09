@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(readonly) BOOL isConnected;
 
-- (void)start;
+- (void)startWithDidConnectBlock:(void (^)(void))aDidConnectBlock;
 - (void)startSendFromStdIn;
 - (void)cancel;
 

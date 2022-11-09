@@ -28,7 +28,10 @@
 
     if (nil != result)
     {
-        [result start];
+        [result startWithDidConnectBlock:
+            ^{
+
+            }];
         [result startSendFromStdIn];
     }
 
@@ -93,7 +96,7 @@
 
 #pragma mark -
 
-- (void)start
+- (void)startWithDidConnectBlock:(void (^)(void))aDidConnectBlock;
 {
     nw_connection_set_queue(_connection, _queue);
 
@@ -132,6 +135,10 @@
                         @"Connection to %s port %u succeeded!",
                         nw_endpoint_get_hostname(remote),
                         nw_endpoint_get_port(remote)]];
+                    if (aDidConnectBlock != nil)
+                    {
+                        aDidConnectBlock();
+                    }
                     break;
                 }
                 case nw_connection_state_failed:
@@ -244,7 +251,7 @@
             if (content != NULL)
             {
                 // If there is content, write it to stdout asynchronously
-                NSData *data = (NSData *)content;
+                NSData *data = [NSData dataWithData:(NSData *)content];
                 NSString *stringRecieved = [[NSString alloc] initWithData:data
                     encoding:NSUTF8StringEncoding];
                 [self stringReceived:stringRecieved];
@@ -271,11 +278,12 @@
 - (dispatch_data_t)dispatchDataFromNSData:(NSData *)aData
 {
     // just incase we are mutable;
-    CFDataRef immutableSelf = CFBridgingRetain([aData copy]);
-    return dispatch_data_create(aData.bytes, aData.length, _queue,
-        ^{
-            CFRelease(immutableSelf);
-        });
+//    CFDataRef immutableSelf = CFBridgingRetain([aData copy]);
+//    return dispatch_data_create(aData.bytes, aData.length, _queue,
+//        ^{
+//            CFRelease(immutableSelf);
+//        });
+    return dispatch_data_create(aData.bytes, aData.length, _queue, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
 }
 
 - (dispatch_data_t)dispatchDataFromNSString:(NSString *)aString

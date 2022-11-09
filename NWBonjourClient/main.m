@@ -36,7 +36,10 @@ void setupConnection(void)
         ^{
             setupConnection();
         }];
-    [connection start];
+    [connection startWithDidConnectBlock:
+        ^{
+
+        }];
     [connection startSendFromStdIn];
 }
 

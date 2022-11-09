@@ -139,7 +139,10 @@
                         weakSelf.inboundConnection = nil;
                     }];
 
-                [self.inboundConnection start];
+                [self.inboundConnection startWithDidConnectBlock:
+                    ^{
+
+                    }];
                 if (self.sendFromStdIn)
                 {
                     [self.inboundConnection startSendFromStdIn];

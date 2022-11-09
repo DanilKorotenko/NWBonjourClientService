@@ -91,7 +91,10 @@
         ^{
             [weakSelf setupConnection];
         }];
-    [self.connection start];
+    [self.connection startWithDidConnectBlock:
+        ^{
+            NSLog(@"Connected");
+        }];
 }
 
 @end
