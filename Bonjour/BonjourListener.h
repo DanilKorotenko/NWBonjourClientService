@@ -6,7 +6,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface BonjourListener : BonjourObject
 
-+ (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType
++ (instancetype _Nullable)createAndStartWithName:(NSString *)aName type:(NSString *)aType
     domain:(NSString *)aDomain;
 
 @property(readwrite) BOOL sendFromStdIn;

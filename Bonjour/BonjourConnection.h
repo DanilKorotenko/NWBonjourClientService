@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)send:(NSString *)aStringToSend;
 
 - (void)setConnectionCanceledBlock:(void (^)(void))aConnectionCanceledBlock;
-- (void)connectionCanceled;
+- (void)setDidConnectBlock:(void (^)(void))aDidConnectBlock;
 
 @end
 

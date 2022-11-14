@@ -60,6 +60,11 @@
     return YES;
 }
 
+- (void)applicationWillTerminate:(NSNotification *)notification
+{
+    NSLog(@"App will terminate");
+}
+
 #pragma mark -
 
 - (IBAction)sendToClient:(id)sender

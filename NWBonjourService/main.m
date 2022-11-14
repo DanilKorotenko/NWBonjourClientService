@@ -18,8 +18,8 @@ int main(int argc, const char * argv[])
     {
         NSLog(@"Hello, Bonjour service!");
 
-        listenerRef = BNJListenerCreateWith(CFSTR("danilkorotenko.hellobonjour"),
-            CFSTR("_exampleService._tcp"), CFSTR("local"));
+        listenerRef = BNJListenerCreateWith(CFSTR("gtb-agent"),
+            CFSTR("_scan4DLPService._tcp"), CFSTR("local"));
 
         if (listenerRef == NULL)
         {

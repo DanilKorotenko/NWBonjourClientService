@@ -19,7 +19,7 @@
     dispatch_queue_t    _queue;
 }
 
-+ (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType
++ (instancetype _Nullable)createAndStartWithName:(NSString *)aName type:(NSString *)aType
     domain:(NSString *)aDomain
 {
     BonjourListener *result = [[BonjourListener alloc] initWithName:aName type:aType
@@ -46,6 +46,19 @@
     return self;
 }
 
+- (void)dealloc
+{
+    self.name = nil;
+    self.type = nil;
+    self.domain = nil;
+    self.inboundConnection = nil;
+
+    dispatch_release(_queue);
+    nw_release(_listener);
+
+    [super dealloc];
+}
+
 #pragma mark -
 
 - (BOOL)start
@@ -55,6 +68,8 @@
 
     _listener = nw_listener_create(parameters);
 
+    nw_release(parameters);
+
     // Advertise name over Bonjour
     nw_advertise_descriptor_t advertise = nw_advertise_descriptor_create_bonjour_service(
         self.name.UTF8String,
@@ -63,16 +78,21 @@
 
     nw_listener_set_advertise_descriptor(_listener, advertise);
 
+    nw_release(advertise);
+
     nw_listener_set_advertised_endpoint_changed_handler(_listener,
         ^(nw_endpoint_t _Nonnull advertised_endpoint, bool added)
         {
-            NSString *message = [NSString stringWithFormat:
-                @"Listener %s on %s (%s.%s.%s)", added ? "added" : "removed",
-                nw_endpoint_get_bonjour_service_name(advertised_endpoint),
-                nw_endpoint_get_bonjour_service_name(advertised_endpoint),
-                self.type.UTF8String,
-                self.domain.UTF8String];
-            [self logOutside:message];
+            @autoreleasepool
+            {
+                NSString *message = [NSString stringWithFormat:
+                    @"Listener %s on %s (%s.%s.%s)", added ? "added" : "removed",
+                    nw_endpoint_get_bonjour_service_name(advertised_endpoint),
+                    nw_endpoint_get_bonjour_service_name(advertised_endpoint),
+                    self.type.UTF8String,
+                    self.domain.UTF8String];
+                [self logOutside:message];
+            }
         });
 
     nw_listener_set_queue(_listener, _queue);
@@ -80,30 +100,33 @@
     nw_listener_set_state_changed_handler(_listener,
         ^(nw_listener_state_t state, nw_error_t error)
         {
-            errno = error ? nw_error_get_error_code(error) : 0;
-            if (state == nw_listener_state_waiting)
+            @autoreleasepool
             {
-                NSString *message = [NSString stringWithFormat:@"Listener on port %u waiting",
-                    nw_listener_get_port(self->_listener)];
-                [self logOutside:message];
-            }
-            else if (state == nw_listener_state_failed)
-            {
-                [self logOutside:@"listener failed"];
-            }
-            else if (state == nw_listener_state_ready)
-            {
-                [self logOutside:[NSString stringWithFormat:@"Listener on port %u ready!",
-                    nw_listener_get_port(self->_listener)]];
-            }
-            else if (state == nw_listener_state_cancelled)
-            {
-                // Release the primary reference on the listener
-                // that was taken at creation time
-                [self logOutside:@"listener canceled. Try to restart."];
-                self.inboundConnection = nil;
-                self->_listener = nil;
-                [self start];
+                errno = error ? nw_error_get_error_code(error) : 0;
+                if (state == nw_listener_state_waiting)
+                {
+                    NSString *message = [NSString stringWithFormat:@"Listener on port %u waiting",
+                        nw_listener_get_port(self->_listener)];
+                    [self logOutside:message];
+                }
+                else if (state == nw_listener_state_failed)
+                {
+                    [self logOutside:@"listener failed"];
+                }
+                else if (state == nw_listener_state_ready)
+                {
+                    [self logOutside:[NSString stringWithFormat:@"Listener on port %u ready!",
+                        nw_listener_get_port(self->_listener)]];
+                }
+                else if (state == nw_listener_state_cancelled)
+                {
+                    // Release the primary reference on the listener
+                    // that was taken at creation time
+                    [self logOutside:@"listener canceled. Try to restart."];
+                    self.inboundConnection = nil;
+                    self->_listener = nil;
+                    [self start];
+                }
             }
         });
 
@@ -111,41 +134,48 @@
     nw_listener_set_new_connection_handler(_listener,
         ^(nw_connection_t connection)
         {
-            if (self.inboundConnection != nil)
+            @autoreleasepool
             {
-                // We only support one connection at a time, so if we already
-                // have one, reject the incoming connection.
-                nw_connection_cancel(connection);
-            }
-            else
-            {
-                // Accept the incoming connection and start sending
-                // and receiving on it.
-                self.inboundConnection = [[BonjourConnection alloc] initWithConnection:connection];
-
-                [self.inboundConnection setLogBlock:
-                    ^(NSString * _Nonnull aLogMessage)
-                    {
-                        [weakSelf logOutside:aLogMessage];
-                    }];
-                [self.inboundConnection setStringReceivedBlock:
-                    ^(NSString * _Nonnull aStringReceived)
-                    {
-                        [weakSelf stringReceived:aStringReceived];
-                    }];
-                [self.inboundConnection setConnectionCanceledBlock:
-                    ^{
-                        [weakSelf logOutside:@"Client disconnected."];
-                        weakSelf.inboundConnection = nil;
-                    }];
-
-                [self.inboundConnection startWithDidConnectBlock:
-                    ^{
-
-                    }];
-                if (self.sendFromStdIn)
+                if (self.inboundConnection != nil)
                 {
-                    [self.inboundConnection startSendFromStdIn];
+                    // We only support one connection at a time, so if we already
+                    // have one, reject the incoming connection.
+                    nw_connection_cancel(connection);
+                    nw_release(connection);
+                }
+                else
+                {
+                    // Accept the incoming connection and start sending
+                    // and receiving on it.
+                    BonjourConnection *inboundConnection = [[BonjourConnection alloc] initWithConnection:connection];
+
+                    [inboundConnection setLogBlock:
+                        ^(NSString * _Nonnull aLogMessage)
+                        {
+                            [weakSelf logOutside:aLogMessage];
+                        }];
+                    [inboundConnection setStringReceivedBlock:
+                        ^(NSString * _Nonnull aStringReceived)
+                        {
+                            [weakSelf stringReceived:aStringReceived];
+                        }];
+                    [inboundConnection setConnectionCanceledBlock:
+                        ^{
+                            [weakSelf logOutside:@"Client disconnected."];
+                            weakSelf.inboundConnection = nil;
+                        }];
+
+                    [inboundConnection startWithDidConnectBlock:
+                        ^{
+
+                        }];
+
+                    if (self.sendFromStdIn)
+                    {
+                        [inboundConnection startSendFromStdIn];
+                    }
+
+                    self.inboundConnection = inboundConnection;
                 }
             }
         });

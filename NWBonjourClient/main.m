@@ -10,12 +10,19 @@
 #import <err.h>
 #import "BonjourConnection.h"
 
-static BonjourConnection *connection = nil;
+BonjourConnection *connection = nil;
 
 void setupConnection(void)
 {
+    if (connection != nil)
+    {
+//        [connection cancel];
+        [connection release];
+        connection = nil;
+    }
+
     connection = [[BonjourConnection alloc] initWithName:
-        @"danilkorotenko.hellobonjour" type:@"_exampleService._tcp" domain:@"local"];
+        @"gtb-agent" type:@"_scan4DLPService._tcp" domain:@"local"];
 
     if (connection == nil)
     {
@@ -34,7 +41,11 @@ void setupConnection(void)
         }];
     [connection setConnectionCanceledBlock:
         ^{
-            setupConnection();
+//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC),
+//                dispatch_get_main_queue(),
+//                    ^{
+                        setupConnection();
+//                    });
         }];
     [connection startWithDidConnectBlock:
         ^{

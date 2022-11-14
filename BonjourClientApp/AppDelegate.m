@@ -66,7 +66,7 @@
 - (void)setupConnection
 {
     self.connection = [[BonjourConnection alloc] initWithName:
-        @"danilkorotenko.hellobonjour" type:@"_exampleService._tcp" domain:@"local"];
+        @"gtb-agent" type:@"_scan4DLPService._tcp" domain:@"local"];
 
     if (self.connection == nil)
     {
