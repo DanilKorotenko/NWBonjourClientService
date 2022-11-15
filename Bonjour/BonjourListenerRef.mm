@@ -54,11 +54,10 @@ void BNJListenerStart(BNJListenerRef aListenerRef)
     [listener start];
 }
 
-void BNJListenerSetSendFromStdIn(BNJListenerRef aListenerRef, bool aFlag)
+void BNJListenerStartSendFromStdIn(BNJListenerRef aListenerRef)
 {
     BonjourListener *listener = (__bridge BonjourListener *)aListenerRef->_bnjListenerController;
-    BOOL flag = aFlag ? YES : NO;
-    listener.sendFromStdIn = flag;
+    [listener startSendFromStdIn];
 }
 
 void BNJListenerControllerReleaseAndMakeNull(BNJListenerRef *aListenerRef)

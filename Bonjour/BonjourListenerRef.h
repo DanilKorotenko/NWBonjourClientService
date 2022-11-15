@@ -22,7 +22,7 @@ void BNJListenerSetLogBlock(BNJListenerRef aListenerRef,
 void BNJListenerSetStringReceivedBlock(BNJListenerRef aListenerRef,
     void (^aBlock)(CFStringRef aStringReceivedMessage));
 
-void BNJListenerSetSendFromStdIn(BNJListenerRef aListenerRef, bool aFlag);
+void BNJListenerStartSendFromStdIn(BNJListenerRef aListenerRef);
 
 void BNJListenerStart(BNJListenerRef aListenerRef);
 

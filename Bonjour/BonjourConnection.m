@@ -18,7 +18,7 @@
     nw_connection_send_completion_t         _sendCompletionWithSendLoop;
     nw_connection_state_changed_handler_t   _stateChangeHandler;
     void (^_stdInReadHandler)(dispatch_data_t data, int error);
-    void (^_connectionCanceledBlock)(void);
+    void (^_connectionCanceledBlock)(BonjourConnection *aConnection);
     void (^_didConnectBlock)(void);
 }
 
@@ -97,7 +97,7 @@
 
 #pragma mark -
 
-- (void)setConnectionCanceledBlock:(void (^)(void))aConnectionCanceledBlock
+- (void)setConnectionCanceledBlock:(void (^)(BonjourConnection *aConnection))aConnectionCanceledBlock
 {
     _connectionCanceledBlock = aConnectionCanceledBlock;
 }
@@ -106,7 +106,7 @@
 {
     if (_connectionCanceledBlock)
     {
-        _connectionCanceledBlock();
+        _connectionCanceledBlock(self);
     }
 }
 
@@ -166,6 +166,12 @@
 - (void)sendLoop
 {
     dispatch_read(STDIN_FILENO, 8192, _queue, _stdInReadHandler);
+}
+
+- (void)sendData:(dispatch_data_t)aDataToSend
+{
+    nw_connection_send(self.connection, aDataToSend,
+        NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT, true, _sendCompletion);
 }
 
 - (void)send:(NSString *)aStringToSend

@@ -16,9 +16,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)startSendFromStdIn;
 - (void)cancel;
 
+- (void)sendData:(dispatch_data_t)aDataToSend;
 - (void)send:(NSString *)aStringToSend;
 
-- (void)setConnectionCanceledBlock:(void (^)(void))aConnectionCanceledBlock;
+- (void)setConnectionCanceledBlock:(void (^)(BonjourConnection *aConnection))aConnectionCanceledBlock;
 - (void)setDidConnectBlock:(void (^)(void))aDidConnectBlock;
 
 @end

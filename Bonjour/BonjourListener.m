@@ -9,7 +9,7 @@
 @property (strong) NSString *name;
 @property (strong) NSString *type;
 @property (strong) NSString *domain;
-@property (strong) BonjourConnection   *inboundConnection;
+@property (strong) NSMutableArray *inboundConnections;
 
 @end
 
@@ -17,6 +17,7 @@
 {
     nw_listener_t       _listener;
     dispatch_queue_t    _queue;
+    void (^_stdInReadHandler)(dispatch_data_t data, int error);
 }
 
 - (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain
@@ -27,7 +28,7 @@
         self.name = aName;
         self.type = aType;
         self.domain = aDomain;
-        self.inboundConnection = nil;
+        self.inboundConnections = [NSMutableArray array];
         _queue = dispatch_queue_create("BonjourService.queue", NULL);
     }
     return self;
@@ -38,7 +39,7 @@
     self.name = nil;
     self.type = nil;
     self.domain = nil;
-    self.inboundConnection = nil;
+    [self.inboundConnections removeAllObjects];
 
     _queue = nil;
     _listener = nil;
@@ -99,7 +100,7 @@
                 // Release the primary reference on the listener
                 // that was taken at creation time
                 [self logOutside:@"listener canceled. Try to restart."];
-                self.inboundConnection = nil;
+                [self.inboundConnections removeAllObjects];
                 self->_listener = nil;
                 [self start];
             }
@@ -109,43 +110,33 @@
     nw_listener_set_new_connection_handler(_listener,
         ^(nw_connection_t connection)
         {
-            if (self.inboundConnection != nil)
-            {
-                // We only support one connection at a time, so if we already
-                // have one, reject the incoming connection.
-                nw_connection_cancel(connection);
-            }
-            else
-            {
-                // Accept the incoming connection and start sending
-                // and receiving on it.
-                BonjourConnection *inboundConnection = [[BonjourConnection alloc] initWithConnection:connection];
+            // Accept the incoming connection and start sending
+            // and receiving on it.
+            BonjourConnection *inboundConnection = [[BonjourConnection alloc] initWithConnection:connection];
 
-                [inboundConnection setLogBlock:
-                    ^(NSString * _Nonnull aLogMessage)
-                    {
-                        [weakSelf logOutside:aLogMessage];
-                    }];
-                [inboundConnection setStringReceivedBlock:
-                    ^(NSString * _Nonnull aStringReceived)
-                    {
-                        [weakSelf stringReceived:aStringReceived];
-                    }];
-                [inboundConnection setConnectionCanceledBlock:
-                    ^{
-                        [weakSelf logOutside:@"Client disconnected."];
-                        weakSelf.inboundConnection = nil;
-                    }];
-
-                [inboundConnection start];
-
-                if (self.sendFromStdIn)
+            [inboundConnection setLogBlock:
+                ^(NSString * _Nonnull aLogMessage)
                 {
-                    [inboundConnection startSendFromStdIn];
-                }
+                    [weakSelf logOutside:aLogMessage];
+                }];
+            [inboundConnection setStringReceivedBlock:
+                ^(NSString * _Nonnull aStringReceived)
+                {
+                    [weakSelf stringReceived:aStringReceived];
+                }];
+            [inboundConnection setConnectionCanceledBlock:
+                ^(BonjourConnection * _Nonnull aConnection)
+                {
+                    [weakSelf logOutside:@"Client disconnected."];
+                    if ([weakSelf.inboundConnections containsObject:aConnection])
+                    {
+                        [weakSelf.inboundConnections removeObject:aConnection];
+                    }
+                }];
 
-                self.inboundConnection = inboundConnection;
-            }
+            [inboundConnection start];
+
+            [self.inboundConnections addObject:inboundConnection];
         });
 
     nw_listener_start(_listener);
@@ -153,9 +144,53 @@
     return _listener != nil;
 }
 
+- (void)sendData:(dispatch_data_t)aDataToSend
+{
+    for (BonjourConnection *connection in self.inboundConnections)
+    {
+        [connection sendData:aDataToSend];
+    }
+}
+
 - (void)send:(NSString *)aStringToSend
 {
-    [self.inboundConnection send:aStringToSend];
+    for (BonjourConnection *connection in self.inboundConnections)
+    {
+        [connection send:aStringToSend];
+    }
+}
+
+- (void)startSendFromStdIn
+{
+    [self setStdInReadHandler];
+
+    // Start reading from stdin
+    [self sendStdInLoop];
+}
+
+- (void)sendStdInLoop
+{
+    dispatch_read(STDIN_FILENO, 8192, _queue, _stdInReadHandler);
+}
+
+- (void)setStdInReadHandler
+{
+    __weak typeof(self) weakSelf = self;
+
+    _stdInReadHandler =
+        ^(dispatch_data_t _Nonnull read_data, int stdin_error)
+        {
+            __typeof__(self) strongSelf = weakSelf;
+            if (stdin_error != 0)
+            {
+                [strongSelf logOutside:[NSString stringWithFormat:
+                    @"stdin read error: %d", stdin_error]];
+            }
+            else if (read_data != NULL)
+            {
+                [strongSelf sendData:read_data];
+            }
+        };
 }
 
 @end
