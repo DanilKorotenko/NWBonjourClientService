@@ -24,27 +24,27 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		DA16549C29101CC900C756D2 /* BonjourListenerRef.mm in Sources */ = {isa = PBXBuildFile; fileRef = DA85D7BF29101AA600B8CE27 /* BonjourListenerRef.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		DA16549C29101CC900C756D2 /* BonjourListenerRef.mm in Sources */ = {isa = PBXBuildFile; fileRef = DA85D7BF29101AA600B8CE27 /* BonjourListenerRef.mm */; };
 		DA1654B2291141FC00C756D2 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654B1291141FC00C756D2 /* AppDelegate.m */; };
 		DA1654B4291141FD00C756D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA1654B3291141FD00C756D2 /* Assets.xcassets */; };
 		DA1654B7291141FD00C756D2 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = DA1654B5291141FD00C756D2 /* MainMenu.xib */; };
-		DA1654B9291141FD00C756D2 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654B8291141FD00C756D2 /* main.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		DA1654CC2911447B00C756D2 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654BF291143A700C756D2 /* BonjourObject.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		DA1654CD2911448800C756D2 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654BF291143A700C756D2 /* BonjourObject.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		DA1654CE291144CC00C756D2 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654BF291143A700C756D2 /* BonjourObject.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		DA1654CF2911668800C756D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		DA1654D02911668F00C756D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		DA1654D52911741000C756D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		DA1654D62911742000C756D2 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654BF291143A700C756D2 /* BonjourObject.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		DA40D169290806BD00436992 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA40D168290806BD00436992 /* main.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		DA1654B9291141FD00C756D2 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654B8291141FD00C756D2 /* main.m */; };
+		DA1654CC2911447B00C756D2 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654BF291143A700C756D2 /* BonjourObject.m */; };
+		DA1654CD2911448800C756D2 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654BF291143A700C756D2 /* BonjourObject.m */; };
+		DA1654CE291144CC00C756D2 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654BF291143A700C756D2 /* BonjourObject.m */; };
+		DA1654CF2911668800C756D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; };
+		DA1654D02911668F00C756D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; };
+		DA1654D52911741000C756D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; };
+		DA1654D62911742000C756D2 /* BonjourObject.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1654BF291143A700C756D2 /* BonjourObject.m */; };
+		DA40D169290806BD00436992 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA40D168290806BD00436992 /* main.m */; };
 		DA63A5912906DB7900E756BC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DA63A5902906DB7900E756BC /* main.m */; };
-		DACAF0BE290C060D00A614D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		DACAF0BE290C060D00A614D2 /* BonjourConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0BC290BFEBB00A614D2 /* BonjourConnection.m */; };
 		DACAF0C7290C0A0F00A614D2 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0C6290C0A0F00A614D2 /* AppDelegate.m */; };
 		DACAF0C9290C0A1000A614D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DACAF0C8290C0A1000A614D2 /* Assets.xcassets */; };
 		DACAF0CC290C0A1000A614D2 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = DACAF0CA290C0A1000A614D2 /* MainMenu.xib */; };
 		DACAF0CE290C0A1000A614D2 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DACAF0CD290C0A1000A614D2 /* main.m */; };
-		DACAF0D3290C1D8000A614D2 /* BonjourListener.m in Sources */ = {isa = PBXBuildFile; fileRef = DAFFC1D5290BF1DF00DB1B90 /* BonjourListener.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		DAFFC1D6290BF1DF00DB1B90 /* BonjourListener.m in Sources */ = {isa = PBXBuildFile; fileRef = DAFFC1D5290BF1DF00DB1B90 /* BonjourListener.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		DACAF0D3290C1D8000A614D2 /* BonjourListener.m in Sources */ = {isa = PBXBuildFile; fileRef = DAFFC1D5290BF1DF00DB1B90 /* BonjourListener.m */; };
+		DAFFC1D6290BF1DF00DB1B90 /* BonjourListener.m in Sources */ = {isa = PBXBuildFile; fileRef = DAFFC1D5290BF1DF00DB1B90 /* BonjourListener.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */

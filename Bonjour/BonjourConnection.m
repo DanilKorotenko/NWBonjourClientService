@@ -40,9 +40,6 @@
 
     result = nw_connection_create(endpoint, parameters);
 
-    nw_release(parameters);
-    nw_release(endpoint);
-
     return result;
 }
 
@@ -79,68 +76,30 @@
 
     self = [self initWithConnection:con];
 
-    nw_release(con);
-
     if (self)
     {
     }
     return self;
 }
 
-- (instancetype)autorelease
-{
-    return [super autorelease];
-}
-
 - (void)dealloc
 {
     self.connection = nil;
 
-    dispatch_release(_queue);
-
-    if (_connectionCanceledBlock != nil)
-    {
-        Block_release(_connectionCanceledBlock);
-    }
-
-    if (_didConnectBlock != nil)
-    {
-        Block_release(_didConnectBlock);
-    }
-
-    if (_receiveCompletion != nil)
-    {
-        Block_release(_receiveCompletion);
-    }
-
-    if (_sendCompletion != nil)
-    {
-        Block_release(_sendCompletion);
-    }
-
-    if (_sendCompletionWithSendLoop)
-    {
-        Block_release(_sendCompletionWithSendLoop);
-    }
-
-    if (_stdInReadHandler)
-    {
-        Block_release(_stdInReadHandler);
-    }
-
-    if (_stateChangeHandler)
-    {
-        Block_release(_stateChangeHandler);
-    }
-
-    [super dealloc];
+    _connectionCanceledBlock = nil;
+    _didConnectBlock = nil;
+    _receiveCompletion = nil;
+    _sendCompletion = nil;
+    _sendCompletionWithSendLoop = nil;
+    _stdInReadHandler = nil;
+    _stateChangeHandler = nil;
 }
 
 #pragma mark -
 
 - (void)setConnectionCanceledBlock:(void (^)(void))aConnectionCanceledBlock
 {
-    _connectionCanceledBlock = Block_copy(aConnectionCanceledBlock);
+    _connectionCanceledBlock = aConnectionCanceledBlock;
 }
 
 - (void)connectionCanceled
@@ -153,7 +112,7 @@
 
 - (void)setDidConnectBlock:(void (^)(void))aDidConnectBlock
 {
-    _didConnectBlock = Block_copy(aDidConnectBlock);
+    _didConnectBlock = aDidConnectBlock;
 }
 
 - (void)didConnect
@@ -173,8 +132,7 @@
 {
     if (connection != aConnection)
     {
-        nw_release(connection);
-        connection = nw_retain(aConnection);
+        connection = aConnection;
     }
 }
 
@@ -241,7 +199,7 @@
 - (void)setReceiveCompletionBlock
 {
     __weak typeof(self) weakSelf = self;
-    _receiveCompletion = Block_copy(
+    _receiveCompletion =
         ^(dispatch_data_t content, nw_content_context_t context, bool is_complete,
             nw_error_t receive_error)
         {
@@ -254,7 +212,6 @@
                 NSString *stringRecieved = [[NSString alloc] initWithData:data
                     encoding:NSUTF8StringEncoding];
                 [strongSelf stringReceived:stringRecieved];
-                [stringRecieved release];
             }
 
             // If the context is marked as complete, and is the final context,
@@ -270,14 +227,14 @@
                 // If there was no error in receiving, request more data
                 [strongSelf receiveLoop:strongSelf.connection];
             }
-        });
+        };
 }
 
 - (void)setSendCompletionBlock
 {
     __weak typeof(self) weakSelf = self;
 
-    _sendCompletion = Block_copy(
+    _sendCompletion =
         ^(nw_error_t  _Nullable error)
         {
             if (error != NULL)
@@ -285,9 +242,9 @@
                 [weakSelf logOutside:[NSString stringWithFormat:
                     @"write close error: %d", nw_error_get_error_code(error)]];
             }
-        });
+        };
 
-    _sendCompletionWithSendLoop = Block_copy(
+    _sendCompletionWithSendLoop =
         ^(nw_error_t  _Nullable error)
         {
             __typeof__(self) strongSelf = weakSelf;
@@ -302,14 +259,14 @@
                 // Continue reading from stdin
                 [strongSelf sendLoop];
             }
-        });
+        };
 }
 
 - (void)setStdInReadHandler
 {
     __weak typeof(self) weakSelf = self;
 
-    _stdInReadHandler = Block_copy(
+    _stdInReadHandler =
         ^(dispatch_data_t _Nonnull read_data, int stdin_error)
         {
             __typeof__(self) strongSelf = weakSelf;
@@ -335,14 +292,14 @@
                 nw_connection_send(strongSelf.connection, read_data,
                     NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT, true, strongSelf->_sendCompletionWithSendLoop);
             }
-        });
+        };
 }
 
 - (void)setStateChangeHandlerBlock
 {
     __weak typeof(self) weakSelf = self;
 
-    _stateChangeHandler = Block_copy(
+    _stateChangeHandler =
         ^(nw_connection_state_t state, nw_error_t error)
         {
             __typeof__(self) strongSelf = weakSelf;
@@ -395,7 +352,7 @@
                     break;
                 }
             }
-        });
+        };
 }
 
 @end

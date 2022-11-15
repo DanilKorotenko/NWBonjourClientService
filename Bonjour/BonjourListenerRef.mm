@@ -12,7 +12,7 @@ BNJListenerRef BNJListenerCreateWith(CFStringRef aName, CFStringRef aType,
     BonjourListener *listener = [[BonjourListener alloc] initWithName:name type:type domain:domain];
 
     BNJListenerRef listenerRef = (BNJListenerRef)malloc(sizeof(BNJListener));
-    listenerRef->_bnjListenerController = (__bridge void *)listener;
+    listenerRef->_bnjListenerController = (__bridge_retained void *)listener;
 
     return listenerRef;
 }

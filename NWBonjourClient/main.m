@@ -17,7 +17,6 @@ void setupConnection(void)
     if (connection != nil)
     {
         [connection cancel];
-        [connection release];
         connection = nil;
     }
 

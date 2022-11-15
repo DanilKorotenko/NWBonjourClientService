@@ -15,14 +15,13 @@
 
 - (void)dealloc
 {
-    Block_release(_logBlock);
-    Block_release(_stringReceivedBlock);
-    [super dealloc];
+    _logBlock = nil;
+    _stringReceivedBlock = nil;
 }
 
 - (void)setLogBlock:(void (^)(NSString *aLogMessage))aLogBlock
 {
-    _logBlock = Block_copy(aLogBlock);
+    _logBlock = aLogBlock;
 }
 
 - (void)logOutside:(NSString *)aLogMessage
@@ -35,7 +34,7 @@
 
 - (void)setStringReceivedBlock:(void (^)(NSString *aStringReceived))aStringReceivedBlock
 {
-    _stringReceivedBlock = Block_copy(aStringReceivedBlock);
+    _stringReceivedBlock = aStringReceivedBlock;
 }
 
 - (void)stringReceived:(NSString *)aStringReceived
