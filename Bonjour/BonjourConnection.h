@@ -7,15 +7,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface BonjourConnection : BonjourObject
 
-+ (instancetype)createAndStartWithName:(NSString *)aName type:(NSString *)aType
-    domain:(NSString *)aDomain;
-
 - (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain;
 - (instancetype)initWithConnection:(nw_connection_t)aConnection;
 
-@property(readonly) BOOL isConnected;
+@property(readonly, atomic) BOOL isConnected;
 
-- (void)startWithDidConnectBlock:(void (^)(void))aDidConnectBlock;
+- (void)start;
 - (void)startSendFromStdIn;
 - (void)cancel;
 

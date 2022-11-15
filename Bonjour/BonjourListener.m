@@ -19,20 +19,6 @@
     dispatch_queue_t    _queue;
 }
 
-+ (instancetype _Nullable)createAndStartWithName:(NSString *)aName type:(NSString *)aType
-    domain:(NSString *)aDomain
-{
-    BonjourListener *result = [[BonjourListener alloc] initWithName:aName type:aType
-        domain:aDomain];
-
-    if (![result start])
-    {
-        result = nil;
-    }
-
-    return result;
-}
-
 - (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain
 {
     self = [super init];
@@ -41,6 +27,7 @@
         self.name = aName;
         self.type = aType;
         self.domain = aDomain;
+        self.inboundConnection = nil;
         _queue = dispatch_queue_create("BonjourService.queue", NULL);
     }
     return self;
@@ -141,7 +128,7 @@
                     // We only support one connection at a time, so if we already
                     // have one, reject the incoming connection.
                     nw_connection_cancel(connection);
-                    nw_release(connection);
+//                    nw_release(connection);
                 }
                 else
                 {
@@ -165,10 +152,7 @@
                             weakSelf.inboundConnection = nil;
                         }];
 
-                    [inboundConnection startWithDidConnectBlock:
-                        ^{
-
-                        }];
+                    [inboundConnection start];
 
                     if (self.sendFromStdIn)
                     {

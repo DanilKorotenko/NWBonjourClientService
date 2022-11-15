@@ -73,28 +73,24 @@
         return;
     }
 
-    __weak typeof(self) weakSelf = self;
+    [self.connection start];
+}
 
-    [self.connection setLogBlock:
-        ^(NSString * _Nonnull aLogMessage)
-        {
-            [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
-                withObject:aLogMessage waitUntilDone:NO];
-        }];
-    [self.connection setStringReceivedBlock:
-        ^(NSString * _Nonnull aStringReceived)
-        {
-            [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
-                withObject:aStringReceived waitUntilDone:NO];
-        }];
-    [self.connection setConnectionCanceledBlock:
-        ^{
-            [weakSelf setupConnection];
-        }];
-    [self.connection startWithDidConnectBlock:
-        ^{
-            NSLog(@"Connected");
-        }];
+- (void)logOutside:(NSString *)aLogMessage
+{
+    [self performSelectorOnMainThread:@selector(appendToLog:)
+        withObject:aLogMessage waitUntilDone:NO];
+}
+
+- (void)stringReceived:(NSString *)aStringReceived
+{
+    [self performSelectorOnMainThread:@selector(appendToLog:)
+        withObject:aStringReceived waitUntilDone:NO];
+}
+
+- (void)didCancel
+{
+    [self setupConnection];
 }
 
 @end

@@ -16,7 +16,7 @@ void setupConnection(void)
 {
     if (connection != nil)
     {
-//        [connection cancel];
+        [connection cancel];
         [connection release];
         connection = nil;
     }
@@ -47,10 +47,7 @@ void setupConnection(void)
                         setupConnection();
 //                    });
         }];
-    [connection startWithDidConnectBlock:
-        ^{
-
-        }];
+    [connection start];
     [connection startSendFromStdIn];
 }
 
