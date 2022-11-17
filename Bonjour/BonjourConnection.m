@@ -2,6 +2,7 @@
 #import "BonjourConnection.h"
 #import <Network/Network.h>
 #import <err.h>
+#import "DispatchData.h"
 
 @interface BonjourConnection ()
 
@@ -176,7 +177,7 @@
 
 - (void)send:(NSString *)aStringToSend
 {
-    dispatch_data_t data = [self newDispatchDataFromNSString:aStringToSend];
+    dispatch_data_t data = [DispatchData dispatch_data_from_NSString:aStringToSend queue:_queue];
 
     nw_connection_send(self.connection, data,
         NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT, true, _sendCompletion);
@@ -185,19 +186,6 @@
 - (void)receiveLoop:(nw_connection_t)aConnection
 {
     nw_connection_receive(aConnection, 1, UINT32_MAX, _receiveCompletion);
-}
-
-#pragma mark -
-
-- (dispatch_data_t)newDispatchDataFromNSData:(NSData *)aData
-{
-    return dispatch_data_create(aData.bytes, aData.length, _queue, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
-}
-
-- (dispatch_data_t)newDispatchDataFromNSString:(NSString *)aString
-{
-    NSData *data = [aString dataUsingEncoding:NSUTF8StringEncoding];
-    return [self newDispatchDataFromNSData:data];
 }
 
 #pragma mark -
