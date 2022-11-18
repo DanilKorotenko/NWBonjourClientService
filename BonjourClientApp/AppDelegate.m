@@ -48,7 +48,7 @@
 {
     NSString *textToSend = self.inputField.stringValue;
 
-    [self.connection send:textToSend];
+    [self.connection sendStringWithRegularCompletion:textToSend];
 
     self.inputField.stringValue = @"";
 }

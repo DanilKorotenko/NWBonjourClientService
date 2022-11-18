@@ -52,6 +52,8 @@
         _queue = dispatch_queue_create("BonjourConnection.queue", NULL);
         [self setReceiveCompletionBlock];
         [self setSendCompletionBlock];
+        [self setStateChangeHandlerBlock];
+
     }
     return self;
 }
@@ -154,6 +156,7 @@
 - (void)startSendFromStdIn
 {
     [self setStdInReadHandler];
+    [self setSendCompletionWithSendLoopBlock];
 
     // Start reading from stdin
     [self sendLoop];
@@ -169,23 +172,33 @@
     dispatch_read(STDIN_FILENO, 8192, _queue, _stdInReadHandler);
 }
 
-- (void)sendData:(dispatch_data_t)aDataToSend
-{
-    nw_connection_send(self.connection, aDataToSend,
-        NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT, true, _sendCompletion);
-}
-
-- (void)send:(NSString *)aStringToSend
-{
-    dispatch_data_t data = [DispatchData dispatch_data_from_NSString:aStringToSend queue:_queue];
-
-    nw_connection_send(self.connection, data,
-        NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT, true, _sendCompletion);
-}
-
 - (void)receiveLoop:(nw_connection_t)aConnection
 {
     nw_connection_receive(aConnection, 1, UINT32_MAX, _receiveCompletion);
+}
+
+#pragma mark -
+
+- (void)sendDataWithRegularCompletion:(dispatch_data_t)aDataToSend
+{
+    [self sendData:aDataToSend sendCompletion:_sendCompletion];
+}
+
+- (void)sendStringWithRegularCompletion:(NSString *)aStringToSend
+{
+    [self sendString:aStringToSend sendCompletion:_sendCompletion];
+}
+
+- (void)sendData:(dispatch_data_t)aDataToSend sendCompletion:(nw_connection_send_completion_t)aSendCompletion
+{
+    nw_connection_send(self.connection, aDataToSend,
+        NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT, true, aSendCompletion);
+}
+
+- (void)sendString:(NSString *)aStringToSend sendCompletion:(nw_connection_send_completion_t)aSendCompletion
+{
+    dispatch_data_t data = [DispatchData dispatch_data_from_NSString:aStringToSend queue:_queue];
+    [self sendData:data sendCompletion:aSendCompletion];
 }
 
 #pragma mark -
@@ -227,7 +240,6 @@
 - (void)setSendCompletionBlock
 {
     __weak typeof(self) weakSelf = self;
-
     _sendCompletion =
         ^(nw_error_t  _Nullable error)
         {
@@ -237,7 +249,11 @@
                     @"write close error: %d", nw_error_get_error_code(error)]];
             }
         };
+}
 
+- (void)setSendCompletionWithSendLoopBlock
+{
+    __weak typeof(self) weakSelf = self;
     _sendCompletionWithSendLoop =
         ^(nw_error_t  _Nullable error)
         {

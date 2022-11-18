@@ -18,6 +18,10 @@
     nw_listener_t       _listener;
     dispatch_queue_t    _queue;
     void (^_stdInReadHandler)(dispatch_data_t data, int error);
+
+    void (^_inboundConnectionLogBlock)(NSString *aLogMessage);
+    void (^_inboundConnectionStringReceivedBlock)(NSString *aStringReceivedMessage);
+    void (^_inboundConnectionCanceledBlock)(BonjourConnection *aConnection);
 }
 
 - (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain
@@ -30,6 +34,10 @@
         self.domain = aDomain;
         self.inboundConnections = [NSMutableArray array];
         _queue = dispatch_queue_create("BonjourService.queue", NULL);
+
+        [self setInboundConnectionLogBlock];
+        [self setInboundConnectionStringReceivedBlock];
+        [self setInboundConnectionCancelledBlock];
     }
     return self;
 }
@@ -110,30 +118,18 @@
     nw_listener_set_new_connection_handler(_listener,
         ^(nw_connection_t connection)
         {
+            __typeof__(self) strongSelf = weakSelf;
+
             // Accept the incoming connection and start sending
             // and receiving on it.
-            BonjourConnection *inboundConnection = [[BonjourConnection alloc] initWithConnection:connection];
+            BonjourConnection *inboundConnection = [[BonjourConnection alloc]
+                initWithConnection:connection];
 
-            [inboundConnection setLogBlock:
-                ^(NSString * _Nonnull aLogMessage)
-                {
-                    [weakSelf logOutside:aLogMessage];
-                }];
+            [inboundConnection setLogBlock:strongSelf->_inboundConnectionLogBlock];
             [inboundConnection setStringReceivedBlock:
-                ^(NSString * _Nonnull aStringReceived)
-                {
-                    [weakSelf stringReceived:aStringReceived];
-                }];
+                strongSelf->_inboundConnectionStringReceivedBlock];
             [inboundConnection setConnectionCanceledBlock:
-                ^(BonjourConnection * _Nonnull aConnection)
-                {
-                    [weakSelf logOutside:@"Client disconnected."];
-                    if ([weakSelf.inboundConnections containsObject:aConnection])
-                    {
-                        [weakSelf.inboundConnections removeObject:aConnection];
-                    }
-                }];
-
+                strongSelf->_inboundConnectionCanceledBlock];
             [inboundConnection start];
 
             [self.inboundConnections addObject:inboundConnection];
@@ -142,22 +138,6 @@
     nw_listener_start(_listener);
 
     return _listener != nil;
-}
-
-- (void)sendData:(dispatch_data_t)aDataToSend
-{
-    for (BonjourConnection *connection in self.inboundConnections)
-    {
-        [connection sendData:aDataToSend];
-    }
-}
-
-- (void)send:(NSString *)aStringToSend
-{
-    for (BonjourConnection *connection in self.inboundConnections)
-    {
-        [connection send:aStringToSend];
-    }
 }
 
 - (void)startSendFromStdIn
@@ -173,10 +153,29 @@
     dispatch_read(STDIN_FILENO, 8192, _queue, _stdInReadHandler);
 }
 
+#pragma mark -
+
+- (void)sendData:(dispatch_data_t)aDataToSend
+{
+    for (BonjourConnection *connection in self.inboundConnections)
+    {
+        [connection sendDataWithRegularCompletion:aDataToSend];
+    }
+}
+
+- (void)send:(NSString *)aStringToSend
+{
+    for (BonjourConnection *connection in self.inboundConnections)
+    {
+        [connection sendStringWithRegularCompletion:aStringToSend];
+    }
+}
+
+#pragma mark -
+
 - (void)setStdInReadHandler
 {
     __weak typeof(self) weakSelf = self;
-
     _stdInReadHandler =
         ^(dispatch_data_t _Nonnull read_data, int stdin_error)
         {
@@ -189,6 +188,46 @@
             else if (read_data != NULL)
             {
                 [strongSelf sendData:read_data];
+
+                // Continue reading from stdin
+                [strongSelf sendStdInLoop];
+            }
+        };
+}
+
+- (void)setInboundConnectionLogBlock
+{
+    __weak typeof(self) weakSelf = self;
+    _inboundConnectionLogBlock =
+        ^(NSString *aLogMessage)
+        {
+            __typeof__(self) strongSelf = weakSelf;
+            [strongSelf logOutside:aLogMessage];
+        };
+}
+
+- (void)setInboundConnectionStringReceivedBlock
+{
+    __weak typeof(self) weakSelf = self;
+    _inboundConnectionStringReceivedBlock =
+        ^(NSString *aStringReceived)
+        {
+            __typeof__(self) strongSelf = weakSelf;
+            [strongSelf stringReceived:aStringReceived];
+        };
+}
+
+- (void)setInboundConnectionCancelledBlock
+{
+    __weak typeof(self) weakSelf = self;
+    _inboundConnectionCanceledBlock =
+        ^(BonjourConnection *aConnection)
+        {
+            __typeof__(self) strongSelf = weakSelf;
+            [strongSelf logOutside:@"Client disconnected."];
+            if ([strongSelf.inboundConnections containsObject:aConnection])
+            {
+                [strongSelf.inboundConnections removeObject:aConnection];
             }
         };
 }
