@@ -53,7 +53,6 @@
         [self setReceiveCompletionBlock];
         [self setSendCompletionBlock];
         [self setStateChangeHandlerBlock];
-
     }
     return self;
 }

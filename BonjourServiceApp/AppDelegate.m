@@ -29,8 +29,8 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    self.listener = [[BonjourListener alloc] initWithName:@"danilkorotenko.hellobonjour"
-        type:@"_exampleService._tcp" domain:@"local"];
+    self.listener = [[BonjourListener alloc] initWithName:@"gtb-agent"
+        type:@"_scan4DLPService._tcp" domain:@"local"];
 
     __weak typeof(self) weakSelf = self;
 
