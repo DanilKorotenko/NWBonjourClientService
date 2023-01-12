@@ -13,8 +13,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property(readonly, atomic) BOOL isConnected;
 
 - (void)start;
-- (void)startSendFromStdIn;
+- (void)startWithDidConnectBlock:(void (^)(void))aDidConnectBlock;
 - (void)cancel;
+
+// For tests
+- (void)startSendFromStdIn;
+///////
 
 - (void)sendDataWithRegularCompletion:(dispatch_data_t)aDataToSend;
 - (void)sendStringWithRegularCompletion:(NSString *)aStringToSend;

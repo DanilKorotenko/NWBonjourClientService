@@ -147,9 +147,14 @@
     nw_connection_set_state_changed_handler(self.connection, _stateChangeHandler);
 
     nw_connection_start(self.connection);
+//    // Start reading from connection
+//    [self receiveLoop:self.connection];
+}
 
-    // Start reading from connection
-    [self receiveLoop:self.connection];
+- (void)startWithDidConnectBlock:(void (^)(void))aDidConnectBlock
+{
+    [self setDidConnectBlock:aDidConnectBlock];
+    [self start];
 }
 
 - (void)startSendFromStdIn
@@ -213,7 +218,6 @@
 
             if (content != NULL)
             {
-                // If there is content, write it to stdout asynchronously
                 NSData *data = [NSData dataWithData:(NSData *)content];
                 NSString *stringRecieved = [[NSString alloc] initWithData:data
                     encoding:NSUTF8StringEncoding];
@@ -225,7 +229,7 @@
             if (is_complete &&
                 (context == NULL || nw_content_context_get_is_final(context)))
             {
-                [strongSelf logOutside:@"server disconnected. reset connection;"];
+                [strongSelf logOutside:@"is_complete, context is final. reset connection;"];
                 [strongSelf connectionCanceled];
             }
             else if (receive_error == NULL)
@@ -317,6 +321,9 @@
             {
                 case nw_connection_state_invalid:
                 {
+                    int errorCode = error ? nw_error_get_error_code(error) : 0;
+                    [strongSelf logOutside:[NSString stringWithFormat:
+                        @"Connection state invalid. Error: %d", errorCode]];
                     strongSelf.isConnected = NO;
                     break;
                 }
@@ -326,12 +333,14 @@
 
                     strongSelf.isConnected = NO;
                     [strongSelf logOutside:[NSString stringWithFormat:
-                        @"Connect failed, is waiting. Error: %d", errorCode]];
+                        @"Connection state waiting. Error: %d", errorCode]];
 
                     break;
                 }
                 case nw_connection_state_preparing:
                 {
+                    [strongSelf logOutside:[NSString stringWithFormat:
+                        @"Connection state preparing."]];
                     strongSelf.isConnected = NO;
                     break;
                 }
@@ -340,13 +349,15 @@
                     strongSelf.isConnected = YES;
                     [strongSelf logOutside:[NSString stringWithFormat:
                         @"Connection succeeded!"]];
+                    [strongSelf didConnect];
+                    strongSelf->_didConnectBlock = nil;
 
+                    [strongSelf receiveLoop:strongSelf.connection];
                     break;
                 }
                 case nw_connection_state_failed:
                 {
                     int errorCode = error ? nw_error_get_error_code(error) : 0;
-
                     strongSelf.isConnected = NO;
                     [strongSelf logOutside:[NSString stringWithFormat:
                         @"Connect failed. Error: %d", errorCode]];
@@ -356,6 +367,9 @@
                 }
                 case nw_connection_state_cancelled:
                 {
+                    int errorCode = error ? nw_error_get_error_code(error) : 0;
+                    [strongSelf logOutside:[NSString stringWithFormat:
+                        @"Connection cancelled. Error: %d", errorCode]];
                     strongSelf.isConnected = NO;
                     [strongSelf connectionCanceled];
                     break;

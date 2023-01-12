@@ -25,6 +25,9 @@ void BNJListenerSetStringReceivedBlock(BNJListenerRef aListenerRef,
 void BNJListenerStartSendFromStdIn(BNJListenerRef aListenerRef);
 
 void BNJListenerStart(BNJListenerRef aListenerRef);
+void BNJListenerStop(BNJListenerRef aListenerRef);
+
+void BNJListenerReleaseAndMakeNull(BNJListenerRef *aListenerRef);
 
 #ifdef __cplusplus
   }

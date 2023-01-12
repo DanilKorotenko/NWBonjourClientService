@@ -10,6 +10,8 @@
 @property (strong) NSString *type;
 @property (strong) NSString *domain;
 @property (strong) NSMutableArray *inboundConnections;
+@property (readwrite) BOOL shouldStop;
+@property (readwrite) BOOL didStop;
 
 @end
 
@@ -107,10 +109,18 @@
             {
                 // Release the primary reference on the listener
                 // that was taken at creation time
-                [self logOutside:@"listener canceled. Try to restart."];
-                [self.inboundConnections removeAllObjects];
-                self->_listener = nil;
-                [self start];
+                [self logOutside:@"listener canceled."];
+                if (!self.shouldStop)
+                {
+                    [self logOutside:@"Try to restart."];
+                    [self.inboundConnections removeAllObjects];
+                    self->_listener = nil;
+                    [self start];
+                }
+                else
+                {
+                    self.didStop = YES;
+                }
             }
         });
 
@@ -138,6 +148,21 @@
     nw_listener_start(_listener);
 
     return _listener != nil;
+}
+
+- (void)stop
+{
+    if (_listener)
+    {
+        self.shouldStop = YES;
+        self.didStop = NO;
+        nw_listener_cancel(_listener);
+        // wait until it really stop
+        while (!self.didStop)
+        {
+            [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1f]];
+        }
+    }
 }
 
 - (void)startSendFromStdIn

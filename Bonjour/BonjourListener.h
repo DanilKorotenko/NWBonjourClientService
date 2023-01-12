@@ -9,6 +9,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain;
 
 - (BOOL)start;
+- (void)stop;
+
 - (void)startSendFromStdIn;
 - (void)send:(NSString *)aStringToSend;
 
