@@ -24,6 +24,9 @@
     void (^_inboundConnectionLogBlock)(NSString *aLogMessage);
     void (^_inboundConnectionStringReceivedBlock)(NSString *aStringReceivedMessage);
     void (^_inboundConnectionCanceledBlock)(BonjourConnection *aConnection);
+
+    nw_listener_state_changed_handler_t     _listenerStateChangeHandler;
+    nw_listener_new_connection_handler_t    _listenerNewConnectionHandler;
 }
 
 - (instancetype)initWithName:(NSString *)aName type:(NSString *)aType domain:(NSString *)aDomain
@@ -40,6 +43,8 @@
         [self setInboundConnectionLogBlock];
         [self setInboundConnectionStringReceivedBlock];
         [self setInboundConnectionCancelledBlock];
+        [self setListenerStateChangeHandler];
+        [self setListenerNewConnectionHandler];
     }
     return self;
 }
@@ -64,88 +69,35 @@
 
     _listener = nw_listener_create(parameters);
 
-    // Advertise name over Bonjour
-    nw_advertise_descriptor_t advertise = nw_advertise_descriptor_create_bonjour_service(
-        self.name.UTF8String,
-        self.type.UTF8String,
-        self.domain.UTF8String);
+    if (_listener != nil)
+    {
+        // Advertise name over Bonjour
+        nw_advertise_descriptor_t advertise = nw_advertise_descriptor_create_bonjour_service(
+            self.name.UTF8String,
+            self.type.UTF8String,
+            self.domain.UTF8String);
 
-    nw_listener_set_advertise_descriptor(_listener, advertise);
+        nw_listener_set_advertise_descriptor(_listener, advertise);
 
-    nw_listener_set_advertised_endpoint_changed_handler(_listener,
-        ^(nw_endpoint_t _Nonnull advertised_endpoint, bool added)
-        {
-            NSString *message = [NSString stringWithFormat:
-                @"Listener %s on %s (%s.%s.%s)", added ? "added" : "removed",
-                nw_endpoint_get_bonjour_service_name(advertised_endpoint),
-                nw_endpoint_get_bonjour_service_name(advertised_endpoint),
-                self.type.UTF8String,
-                self.domain.UTF8String];
-            [self logOutside:message];
-        });
-
-    nw_listener_set_queue(_listener, _queue);
-
-    nw_listener_set_state_changed_handler(_listener,
-        ^(nw_listener_state_t state, nw_error_t error)
-        {
-            errno = error ? nw_error_get_error_code(error) : 0;
-            if (state == nw_listener_state_waiting)
+        __weak typeof(self) weakSelf = self;
+        nw_listener_set_advertised_endpoint_changed_handler(_listener,
+            ^(nw_endpoint_t _Nonnull advertised_endpoint, bool added)
             {
-                NSString *message = [NSString stringWithFormat:@"Listener on port %u waiting",
-                    nw_listener_get_port(self->_listener)];
-                [self logOutside:message];
-            }
-            else if (state == nw_listener_state_failed)
-            {
-                [self logOutside:@"listener failed"];
-            }
-            else if (state == nw_listener_state_ready)
-            {
-                [self logOutside:[NSString stringWithFormat:@"Listener on port %u ready!",
-                    nw_listener_get_port(self->_listener)]];
-            }
-            else if (state == nw_listener_state_cancelled)
-            {
-                // Release the primary reference on the listener
-                // that was taken at creation time
-                [self logOutside:@"listener canceled."];
-                if (!self.shouldStop)
-                {
-                    [self logOutside:@"Try to restart."];
-                    [self.inboundConnections removeAllObjects];
-                    self->_listener = nil;
-                    [self start];
-                }
-                else
-                {
-                    self.didStop = YES;
-                }
-            }
-        });
+                __typeof__(self) strongSelf = weakSelf;
+                [strongSelf logOutside: @"Listener %s on %s (%s.%s.%s)", added ? "added" : "removed",
+                    nw_endpoint_get_bonjour_service_name(advertised_endpoint),
+                    nw_endpoint_get_bonjour_service_name(advertised_endpoint),
+                    strongSelf.type.UTF8String,
+                    strongSelf.domain.UTF8String];
+            });
 
-    __weak typeof(self) weakSelf = self;
-    nw_listener_set_new_connection_handler(_listener,
-        ^(nw_connection_t connection)
-        {
-            __typeof__(self) strongSelf = weakSelf;
+        nw_listener_set_queue(_listener, _queue);
 
-            // Accept the incoming connection and start sending
-            // and receiving on it.
-            BonjourConnection *inboundConnection = [[BonjourConnection alloc]
-                initWithConnection:connection];
+        nw_listener_set_state_changed_handler(_listener, _listenerStateChangeHandler);
+        nw_listener_set_new_connection_handler(_listener, _listenerNewConnectionHandler);
 
-            [inboundConnection setLogBlock:strongSelf->_inboundConnectionLogBlock];
-            [inboundConnection setStringReceivedBlock:
-                strongSelf->_inboundConnectionStringReceivedBlock];
-            [inboundConnection setConnectionCanceledBlock:
-                strongSelf->_inboundConnectionCanceledBlock];
-            [inboundConnection start];
-
-            [self.inboundConnections addObject:inboundConnection];
-        });
-
-    nw_listener_start(_listener);
+        nw_listener_start(_listener);
+    }
 
     return _listener != nil;
 }
@@ -207,8 +159,7 @@
             __typeof__(self) strongSelf = weakSelf;
             if (stdin_error != 0)
             {
-                [strongSelf logOutside:[NSString stringWithFormat:
-                    @"stdin read error: %d", stdin_error]];
+                [strongSelf logOutside:@"stdin read error: %d", stdin_error];
             }
             else if (read_data != NULL)
             {
@@ -257,4 +208,71 @@
         };
 }
 
+- (void)setListenerStateChangeHandler
+{
+    __weak typeof(self) weakSelf = self;
+    _listenerStateChangeHandler =
+        ^(nw_listener_state_t state, nw_error_t error)
+        {
+            __typeof__(self) strongSelf = weakSelf;
+            if (state == nw_listener_state_waiting)
+            {
+                [strongSelf logOutside:@"Listener on port %u waiting",
+                    nw_listener_get_port(strongSelf->_listener)];
+            }
+            else if (state == nw_listener_state_failed)
+            {
+                [strongSelf logOutside:@"listener failed"];
+            }
+            else if (state == nw_listener_state_ready)
+            {
+                [strongSelf logOutside:@"Listener on port %u ready!",
+                    nw_listener_get_port(strongSelf->_listener)];
+            }
+            else if (state == nw_listener_state_cancelled)
+            {
+                // Release the primary reference on the listener
+                // that was taken at creation time
+                [strongSelf logOutside:@"listener canceled."];
+                if (!strongSelf.shouldStop)
+                {
+                    [strongSelf logOutside:@"Try to restart."];
+                    [strongSelf.inboundConnections removeAllObjects];
+                    strongSelf->_listener = nil;
+                    [strongSelf start];
+                }
+                else
+                {
+                    strongSelf.didStop = YES;
+                }
+            }
+        };
+}
+
+- (void)setListenerNewConnectionHandler
+{
+    __weak typeof(self) weakSelf = self;
+    _listenerNewConnectionHandler =
+        ^(nw_connection_t connection)
+        {
+            __typeof__(self) strongSelf = weakSelf;
+
+            // Accept the incoming connection and start sending
+            // and receiving on it.
+            BonjourConnection *inboundConnection = [[BonjourConnection alloc]
+                initWithConnection:connection];
+
+            [strongSelf logOutside:@"new connection: %@", inboundConnection];
+
+            [inboundConnection setLogBlock:strongSelf->_inboundConnectionLogBlock];
+            [inboundConnection setStringReceivedBlock:
+                strongSelf->_inboundConnectionStringReceivedBlock];
+            [inboundConnection setConnectionCanceledBlock:
+                strongSelf->_inboundConnectionCanceledBlock];
+            [inboundConnection start];
+
+            [strongSelf.inboundConnections addObject:inboundConnection];
+        };
+
+}
 @end

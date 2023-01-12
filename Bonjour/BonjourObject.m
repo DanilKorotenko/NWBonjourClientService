@@ -24,11 +24,16 @@
     _logBlock = aLogBlock;
 }
 
-- (void)logOutside:(NSString *)aLogMessage
+- (void)logOutside:(NSString *)aLogMessage, ...
 {
     if (_logBlock)
     {
-        _logBlock(aLogMessage);
+        NSString *message = nil;
+        va_list args;
+        va_start(args, aLogMessage);
+        message = [[NSString alloc] initWithFormat:aLogMessage arguments:args];
+        va_end(args);
+        _logBlock(message);
     }
 }
 
