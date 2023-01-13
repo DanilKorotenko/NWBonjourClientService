@@ -186,9 +186,9 @@
     dispatch_read(STDIN_FILENO, 8192, _queue, _stdInReadHandler);
 }
 
-- (void)receiveLoop:(nw_connection_t)aConnection
+- (void)receiveLoop
 {
-    nw_connection_receive(aConnection, 1, UINT32_MAX, _receiveCompletion);
+    nw_connection_receive(self.connection, 1, UINT32_MAX, _receiveCompletion);
 }
 
 #pragma mark -
@@ -245,7 +245,7 @@
             else if (receive_error == NULL)
             {
                 // If there was no error in receiving, request more data
-                [strongSelf receiveLoop:strongSelf.connection];
+                [strongSelf receiveLoop];
             }
         };
 }
@@ -346,7 +346,7 @@
                     [strongSelf didConnect];
                     strongSelf->_didConnectBlock = nil;
 
-                    [strongSelf receiveLoop:strongSelf.connection];
+                    [strongSelf receiveLoop];
                     break;
                 }
                 case nw_connection_state_failed:
