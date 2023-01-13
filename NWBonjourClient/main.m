@@ -8,38 +8,43 @@
 #import <Foundation/Foundation.h>
 #import <Network/Network.h>
 #import <err.h>
-#import "BonjourConnection.h"
+#import "BonjourConnectionsManager.h"
 
-BonjourConnection *connection = nil;
-
-void setupConnection(void)
+void readFromStdIn(void)
 {
-    if (connection != nil)
-    {
-        [connection cancel];
-        connection = nil;
-    }
-
-    connection = [[BonjourConnection alloc] initWithName:
-        @"gtb-agent" type:@"_scan4DLPService._tcp" domain:@"local"];
-
-    if (connection == nil)
-    {
-        err(1, NULL);
-    }
-
-    [connection setStringReceivedBlock:
-        ^(NSString * _Nonnull aStringReceived)
+    dispatch_read(STDIN_FILENO, 8192, dispatch_get_main_queue(),
+        ^(dispatch_data_t  _Nonnull data, int stdinError)
         {
-            NSLog(@"%@", aStringReceived);
+            if (stdinError != 0)
+            {
+                NSLog(@"StdIn error: %d", stdinError);
+            }
+            else
+            {
+                [[BonjourConnectionsManager sharedManager] sendData:data withSendCompletionBlock:
+                    ^(NSError *err)
+                    {
+                        if (err)
+                        {
+                            NSLog(@"Error on send: %@", err);
+                        }
+                        else
+                        {
+                            readFromStdIn();
+                        }
+                    }];
+            }
+        });
+}
+
+void setupNewConnection(void)
+{
+    [[BonjourConnectionsManager sharedManager] startBonjourConnectionWithName:@"gtb-agent"
+        type:@"_scan4DLPService._tcp" domain:@"local"
+        didConnectBlock:
+        ^{
+            readFromStdIn();
         }];
-    [connection setConnectionCanceledBlock:
-        ^(BonjourConnection * _Nonnull aConnection)
-        {
-            setupConnection();
-        }];
-    [connection start];
-    [connection startSendFromStdIn];
 }
 
 int main(int argc, const char * argv[])
@@ -47,15 +52,25 @@ int main(int argc, const char * argv[])
     @autoreleasepool
     {
         NSLog(@"Hello, Bonjour client!");
-        [BonjourObject setLogBlock:
+        [BonjourConnectionsManager sharedManager].logBlock =
             ^(NSString * _Nonnull aLogMessage)
             {
                 NSLog(@"%@", aLogMessage);
-            }];
+            };
+        [BonjourConnectionsManager sharedManager].connectionCanceledBlock =
+            ^{
+                setupNewConnection();
+            };
+        [BonjourConnectionsManager sharedManager].stringReceivedBlock =
+            ^(NSString * _Nonnull aStringReceived)
+            {
+                NSLog(@"%@", aStringReceived);
+            };
 
-        setupConnection();
+        setupNewConnection();
     }
 
     dispatch_main();
+
     return 0;
 }
