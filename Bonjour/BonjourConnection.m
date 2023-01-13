@@ -6,7 +6,6 @@
 
 @interface BonjourConnection ()
 
-@property (readwrite, atomic) BOOL isConnected;
 @property (readwrite, atomic) nw_connection_t connection;
 
 @end
@@ -327,28 +326,22 @@
                 case nw_connection_state_invalid:
                 {
                     int errorCode = error ? nw_error_get_error_code(error) : 0;
-                    strongSelf.isConnected = NO;
                     [BonjourObject logOutside:@"Connection state invalid. Error: %d", errorCode];
                     break;
                 }
                 case nw_connection_state_waiting:
                 {
                     int errorCode = error ? nw_error_get_error_code(error) : 0;
-
-                    strongSelf.isConnected = NO;
-
                     [BonjourObject logOutside:@"Connection state waiting. Error: %d", errorCode];
                     break;
                 }
                 case nw_connection_state_preparing:
                 {
-                    strongSelf.isConnected = NO;
                     [BonjourObject logOutside:@"Connection state preparing."];
                     break;
                 }
                 case nw_connection_state_ready:
                 {
-                    strongSelf.isConnected = YES;
                     [BonjourObject logOutside:@"Connection succeeded!"];
                     [strongSelf didConnect];
                     strongSelf->_didConnectBlock = nil;
@@ -359,16 +352,13 @@
                 case nw_connection_state_failed:
                 {
                     int errorCode = error ? nw_error_get_error_code(error) : 0;
-                    strongSelf.isConnected = NO;
                     [BonjourObject logOutside:@"Connect failed. Error: %d", errorCode];
                     [strongSelf connectionCanceled];
-
                     break;
                 }
                 case nw_connection_state_cancelled:
                 {
                     int errorCode = error ? nw_error_get_error_code(error) : 0;
-                    strongSelf.isConnected = NO;
                     [BonjourObject logOutside:@"Connection cancelled. Error: %d", errorCode];
                     [strongSelf connectionCanceled];
                     break;
