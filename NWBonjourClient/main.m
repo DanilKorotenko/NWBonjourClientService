@@ -10,6 +10,8 @@
 #import <err.h>
 #import "BonjourConnectionsManager.h"
 
+static BonjourConnectionsManager *connectionsManager = nil;
+
 void readFromStdIn(void)
 {
     dispatch_read(STDIN_FILENO, 8192, dispatch_get_main_queue(),
@@ -21,7 +23,7 @@ void readFromStdIn(void)
             }
             else
             {
-                [[BonjourConnectionsManager sharedManager] sendData:data withSendCompletionBlock:
+                [connectionsManager sendData:data withSendCompletionBlock:
                     ^(NSError *err)
                     {
                         if (err)
@@ -39,7 +41,7 @@ void readFromStdIn(void)
 
 void setupNewConnection(void)
 {
-    [[BonjourConnectionsManager sharedManager] startBonjourConnectionWithName:@"gtb-agent"
+    [connectionsManager startBonjourConnectionWithName:@"gtb-agent"
         type:@"_scan4DLPService._tcp" domain:@"local"
         didConnectBlock:
         ^{
@@ -52,16 +54,18 @@ int main(int argc, const char * argv[])
     @autoreleasepool
     {
         NSLog(@"Hello, Bonjour client!");
-        [BonjourConnectionsManager sharedManager].logBlock =
+        connectionsManager = [[BonjourConnectionsManager alloc] init];
+
+        connectionsManager.logBlock =
             ^(NSString * _Nonnull aLogMessage)
             {
                 NSLog(@"%@", aLogMessage);
             };
-        [BonjourConnectionsManager sharedManager].connectionCanceledBlock =
+        connectionsManager.connectionCanceledBlock =
             ^{
                 setupNewConnection();
             };
-        [BonjourConnectionsManager sharedManager].stringReceivedBlock =
+        connectionsManager.stringReceivedBlock =
             ^(NSString * _Nonnull aStringReceived)
             {
                 NSLog(@"%@", aStringReceived);

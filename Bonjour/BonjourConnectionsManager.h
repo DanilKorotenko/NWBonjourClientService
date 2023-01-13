@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong) void (^stringReceivedBlock)(NSString *aStringReceived);
 @property (strong) void (^connectionCanceledBlock)(void);
 
-+ (BonjourConnectionsManager *)sharedManager;
+//+ (BonjourConnectionsManager *)sharedManager;
 
 - (void)startBonjourConnectionWithName:(NSString *)aName type:(NSString *)aType
     domain:(NSString *)aDomain didConnectBlock:(void (^)(void))aDidConnectBlock;

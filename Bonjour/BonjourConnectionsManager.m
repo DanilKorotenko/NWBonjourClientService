@@ -18,17 +18,17 @@
 
 @implementation BonjourConnectionsManager
 
-// singleton implementation
-+ (BonjourConnectionsManager *)sharedManager
-{
-    static BonjourConnectionsManager *sharedManager = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken,
-    ^{
-        sharedManager = [[BonjourConnectionsManager alloc] init];
-    });
-    return sharedManager;
-}
+//// singleton implementation
+//+ (BonjourConnectionsManager *)sharedManager
+//{
+//    static BonjourConnectionsManager *sharedManager = nil;
+//    static dispatch_once_t onceToken;
+//    dispatch_once(&onceToken,
+//    ^{
+//        sharedManager = [[BonjourConnectionsManager alloc] init];
+//    });
+//    return sharedManager;
+//}
 
 + (nw_connection_t)newConnectionWithName:(NSString *)aName type:(NSString *)aType
     domain:(NSString *)aDomain
