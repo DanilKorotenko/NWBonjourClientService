@@ -21,7 +21,7 @@ void BNJSetLogBlock(void (^aBlock)(CFStringRef aLogMessage));
 void BNJListenerSetStringReceivedBlock(BNJListenerRef aListenerRef,
     void (^aBlock)(CFStringRef aStringReceivedMessage));
 
-void BNJListenerStartSendFromStdIn(BNJListenerRef aListenerRef);
+//void BNJListenerStartSendFromStdIn(BNJListenerRef aListenerRef);
 
 void BNJListenerStart(BNJListenerRef aListenerRef);
 void BNJListenerStop(BNJListenerRef aListenerRef);

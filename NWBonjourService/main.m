@@ -42,7 +42,7 @@ int main(int argc, const char * argv[])
 
         BNJListenerStart(listenerRef);
 
-        BNJListenerStartSendFromStdIn(listenerRef);
+//        BNJListenerStartSendFromStdIn(listenerRef);
     }
 
     dispatch_main();

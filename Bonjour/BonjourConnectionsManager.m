@@ -62,9 +62,15 @@
     didConnectBlock:(void (^)(void))aDidConnectBlock
 {
     nw_connection_t connection = [[self class] newConnectionWithName:aName type:aType domain:aDomain];
-    nw_connection_set_queue(connection, _queue);
+    [self startConnection:connection didConnectBlock:aDidConnectBlock];
+}
 
-    nw_connection_set_state_changed_handler(connection,
+- (void)startConnection:(nw_connection_t)aConnection
+    didConnectBlock:(void (^)(void))aDidConnectBlock
+{
+    nw_connection_set_queue(aConnection, _queue);
+
+    nw_connection_set_state_changed_handler(aConnection,
         ^(nw_connection_state_t state, nw_error_t  _Nullable error)
         {
             if (error)
@@ -76,9 +82,9 @@
 //                    NSString *errorDescr = CFBridgingRelease(errDescrRef);
                     [self logOutside:@"Connection error: %@", err];
                 }
-                if ([self.readyConnections containsObject:connection])
+                if ([self.readyConnections containsObject:aConnection])
                 {
-                    [self.readyConnections removeObject:connection];
+                    [self.readyConnections removeObject:aConnection];
                 }
                 if (nil != self.connectionCanceledBlock)
                 {
@@ -89,7 +95,7 @@
 
             if (state == nw_connection_state_ready)
             {
-                [self.readyConnections addObject:connection];
+                [self.readyConnections addObject:aConnection];
                 if (aDidConnectBlock)
                 {
                     aDidConnectBlock();
@@ -97,8 +103,10 @@
             }
         });
 
-    nw_connection_start(connection);
+    nw_connection_start(aConnection);
 }
+
+#pragma mark -
 
 - (void)sendData:(dispatch_data_t)aData
     withSendCompletionBlock:(void (^)(NSError *error))aSendCompletionBlock

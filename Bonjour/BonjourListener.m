@@ -2,30 +2,31 @@
 #import "BonjourListener.h"
 #import <Network/Network.h>
 #import <err.h>
-#import "BonjourConnection.h"
+#import "BonjourConnectionsManager.h"
 
 @interface BonjourListener ()
 
 @property (strong) NSString *name;
 @property (strong) NSString *type;
 @property (strong) NSString *domain;
-@property (strong) NSMutableArray *inboundConnections;
+@property (strong) BonjourConnectionsManager *connectionsManager;
 @property (readwrite) BOOL shouldStop;
 @property (readwrite) BOOL didStop;
 
+@property (strong, nonatomic) void (^logBlock)(NSString *aLogMessage);
 
+@property (strong) nw_listener_t listener;
+@property (strong) dispatch_queue_t queue;
 
 @end
 
 @implementation BonjourListener
 {
-    nw_listener_t       _listener;
-    dispatch_queue_t    _queue;
-    void (^_stdInReadHandler)(dispatch_data_t data, int error);
-
-    void (^_inboundConnectionStringReceivedBlock)(NSString *aStringReceivedMessage);
-    void (^_inboundConnectionCanceledBlock)(BonjourConnection *aConnection);
-
+//    void (^_stdInReadHandler)(dispatch_data_t data, int error);
+//
+//    void (^_inboundConnectionStringReceivedBlock)(NSString *aStringReceivedMessage);
+//    void (^_inboundConnectionCanceledBlock)(BonjourConnection *aConnection);
+//
     nw_listener_state_changed_handler_t     _listenerStateChangeHandler;
     nw_listener_new_connection_handler_t    _listenerNewConnectionHandler;
 }
@@ -38,11 +39,12 @@
         self.name = aName;
         self.type = aType;
         self.domain = aDomain;
-        self.inboundConnections = [NSMutableArray array];
-        _queue = dispatch_queue_create("BonjourService.queue", NULL);
+        self.connectionsManager = [[BonjourConnectionsManager alloc] init];
 
-        [self setInboundConnectionStringReceivedBlock];
-        [self setInboundConnectionCancelledBlock];
+        self.queue = dispatch_queue_create("BonjourListener.queue", NULL);
+
+//        [self setInboundConnectionStringReceivedBlock];
+//        [self setInboundConnectionCancelledBlock];
         [self setListenerStateChangeHandler];
         [self setListenerNewConnectionHandler];
     }
@@ -54,10 +56,10 @@
     self.name = nil;
     self.type = nil;
     self.domain = nil;
-    [self.inboundConnections removeAllObjects];
+    self.connectionsManager = nil;
 
-    _queue = nil;
-    _listener = nil;
+    self.queue = nil;
+    self.listener = nil;
 }
 
 #pragma mark -
@@ -67,9 +69,9 @@
     nw_parameters_t parameters = nw_parameters_create_secure_tcp(NW_PARAMETERS_DISABLE_PROTOCOL,
         NW_PARAMETERS_DEFAULT_CONFIGURATION);
 
-    _listener = nw_listener_create(parameters);
+    self.listener = nw_listener_create(parameters);
 
-    if (_listener != nil)
+    if (self.listener != nil)
     {
         // Advertise name over Bonjour
         nw_advertise_descriptor_t advertise = nw_advertise_descriptor_create_bonjour_service(
@@ -77,38 +79,38 @@
             self.type.UTF8String,
             self.domain.UTF8String);
 
-        nw_listener_set_advertise_descriptor(_listener, advertise);
+        nw_listener_set_advertise_descriptor(self.listener, advertise);
 
         __weak typeof(self) weakSelf = self;
-        nw_listener_set_advertised_endpoint_changed_handler(_listener,
+        nw_listener_set_advertised_endpoint_changed_handler(self.listener,
             ^(nw_endpoint_t _Nonnull advertised_endpoint, bool added)
             {
                 __typeof__(self) strongSelf = weakSelf;
-                [BonjourObject logOutside: @"Listener %s on %s (%s.%s.%s)", added ? "added" : "removed",
+                [strongSelf logOutside: @"Listener %s on %s (%s.%s.%s)", added ? "added" : "removed",
                     nw_endpoint_get_bonjour_service_name(advertised_endpoint),
                     nw_endpoint_get_bonjour_service_name(advertised_endpoint),
                     strongSelf.type.UTF8String,
                     strongSelf.domain.UTF8String];
             });
 
-        nw_listener_set_queue(_listener, _queue);
+        nw_listener_set_queue(self.listener, self.queue);
 
-        nw_listener_set_state_changed_handler(_listener, _listenerStateChangeHandler);
-        nw_listener_set_new_connection_handler(_listener, _listenerNewConnectionHandler);
+        nw_listener_set_state_changed_handler(self.listener, _listenerStateChangeHandler);
+        nw_listener_set_new_connection_handler(self.listener, _listenerNewConnectionHandler);
 
-        nw_listener_start(_listener);
+        nw_listener_start(self.listener);
     }
 
-    return _listener != nil;
+    return self.listener != nil;
 }
 
 - (void)stop
 {
-    if (_listener)
+    if (self.listener)
     {
         self.shouldStop = YES;
         self.didStop = NO;
-        nw_listener_cancel(_listener);
+        nw_listener_cancel(self.listener);
         // wait until it really stop
         while (!self.didStop)
         {
@@ -117,85 +119,85 @@
     }
 }
 
-- (void)startSendFromStdIn
-{
-    [self setStdInReadHandler];
+//- (void)startSendFromStdIn
+//{
+//    [self setStdInReadHandler];
+//
+//    // Start reading from stdin
+//    [self sendStdInLoop];
+//}
 
-    // Start reading from stdin
-    [self sendStdInLoop];
-}
-
-- (void)sendStdInLoop
-{
-    dispatch_read(STDIN_FILENO, 8192, _queue, _stdInReadHandler);
-}
-
-#pragma mark -
-
-- (void)sendData:(dispatch_data_t)aDataToSend
-{
-    for (BonjourConnection *connection in self.inboundConnections)
-    {
-        [connection sendDataWithRegularCompletion:aDataToSend];
-    }
-}
-
-- (void)send:(NSString *)aStringToSend
-{
-    for (BonjourConnection *connection in self.inboundConnections)
-    {
-        [connection sendStringWithRegularCompletion:aStringToSend];
-    }
-}
+//- (void)sendStdInLoop
+//{
+//    dispatch_read(STDIN_FILENO, 8192, _queue, _stdInReadHandler);
+//}
 
 #pragma mark -
 
-- (void)setStdInReadHandler
-{
-    __weak typeof(self) weakSelf = self;
-    _stdInReadHandler =
-        ^(dispatch_data_t _Nonnull read_data, int stdin_error)
-        {
-            __typeof__(self) strongSelf = weakSelf;
-            if (stdin_error != 0)
-            {
-                [BonjourObject logOutside:@"stdin read error: %d", stdin_error];
-            }
-            else if (read_data != NULL)
-            {
-                [strongSelf sendData:read_data];
+//- (void)sendData:(dispatch_data_t)aDataToSend
+//{
+//    for (BonjourConnection *connection in self.inboundConnections)
+//    {
+//        [connection sendDataWithRegularCompletion:aDataToSend];
+//    }
+//}
 
-                // Continue reading from stdin
-                [strongSelf sendStdInLoop];
-            }
-        };
-}
+//- (void)send:(NSString *)aStringToSend
+//{
+//    for (BonjourConnection *connection in self.inboundConnections)
+//    {
+//        [connection sendStringWithRegularCompletion:aStringToSend];
+//    }
+//}
 
-- (void)setInboundConnectionStringReceivedBlock
-{
-    __weak typeof(self) weakSelf = self;
-    _inboundConnectionStringReceivedBlock =
-        ^(NSString *aStringReceived)
-        {
-            __typeof__(self) strongSelf = weakSelf;
-            [strongSelf stringReceived:aStringReceived];
-        };
-}
+#pragma mark -
 
-- (void)setInboundConnectionCancelledBlock
-{
-    __weak typeof(self) weakSelf = self;
-    _inboundConnectionCanceledBlock =
-        ^(BonjourConnection *aConnection)
-        {
-            __typeof__(self) strongSelf = weakSelf;
-            [BonjourObject logOutside:@"Client disconnected."];
-            if ([strongSelf.inboundConnections containsObject:aConnection])
-            {
-                [strongSelf.inboundConnections removeObject:aConnection];
-            }
-        };
-}
+//- (void)setStdInReadHandler
+//{
+//    __weak typeof(self) weakSelf = self;
+//    _stdInReadHandler =
+//        ^(dispatch_data_t _Nonnull read_data, int stdin_error)
+//        {
+//            __typeof__(self) strongSelf = weakSelf;
+//            if (stdin_error != 0)
+//            {
+//                [BonjourObject logOutside:@"stdin read error: %d", stdin_error];
+//            }
+//            else if (read_data != NULL)
+//            {
+//                [strongSelf sendData:read_data];
+//
+//                // Continue reading from stdin
+//                [strongSelf sendStdInLoop];
+//            }
+//        };
+//}
+
+//- (void)setInboundConnectionStringReceivedBlock
+//{
+//    __weak typeof(self) weakSelf = self;
+//    _inboundConnectionStringReceivedBlock =
+//        ^(NSString *aStringReceived)
+//        {
+//            __typeof__(self) strongSelf = weakSelf;
+//            [strongSelf stringReceived:aStringReceived];
+//        };
+//}
+
+//- (void)setInboundConnectionCancelledBlock
+//{
+//    __weak typeof(self) weakSelf = self;
+//    _inboundConnectionCanceledBlock =
+//        ^(BonjourConnection *aConnection)
+//        {
+//            __typeof__(self) strongSelf = weakSelf;
+//            [BonjourObject logOutside:@"Client disconnected."];
+//            if ([strongSelf.inboundConnections containsObject:aConnection])
+//            {
+//                [strongSelf.inboundConnections removeObject:aConnection];
+//            }
+//        };
+//}
 
 - (void)setListenerStateChangeHandler
 {
@@ -206,28 +208,30 @@
             __typeof__(self) strongSelf = weakSelf;
             if (state == nw_listener_state_waiting)
             {
-                [BonjourObject logOutside:@"Listener on port %u waiting",
-                    nw_listener_get_port(strongSelf->_listener)];
+                [strongSelf logOutside:@"Listener on port %u waiting",
+                    nw_listener_get_port(strongSelf.listener)];
             }
             else if (state == nw_listener_state_failed)
             {
-                [BonjourObject logOutside:@"listener failed"];
+                [strongSelf logOutside:@"listener failed"];
             }
             else if (state == nw_listener_state_ready)
             {
-                [BonjourObject logOutside:@"Listener on port %u ready!",
-                    nw_listener_get_port(strongSelf->_listener)];
+                [strongSelf logOutside:@"Listener on port %u ready!",
+                    nw_listener_get_port(strongSelf.listener)];
             }
             else if (state == nw_listener_state_cancelled)
             {
                 // Release the primary reference on the listener
                 // that was taken at creation time
-                [BonjourObject logOutside:@"listener canceled."];
+                [strongSelf logOutside:@"listener canceled."];
                 if (!strongSelf.shouldStop)
                 {
-                    [BonjourObject logOutside:@"Try to restart."];
-                    [strongSelf.inboundConnections removeAllObjects];
-                    strongSelf->_listener = nil;
+                    [strongSelf logOutside:@"Try to restart."];
+                    strongSelf.connectionsManager = nil;
+                    strongSelf.connectionsManager = [[BonjourConnectionsManager alloc] init];
+
+                    strongSelf.listener = nil;
                     [strongSelf start];
                 }
                 else
@@ -246,21 +250,40 @@
         {
             __typeof__(self) strongSelf = weakSelf;
 
-            // Accept the incoming connection and start sending
-            // and receiving on it.
-            BonjourConnection *inboundConnection = [[BonjourConnection alloc]
-                initWithConnection:connection];
-
-            [BonjourObject logOutside:@"new connection: %@", inboundConnection];
-
-            [inboundConnection setStringReceivedBlock:
-                strongSelf->_inboundConnectionStringReceivedBlock];
-            [inboundConnection setConnectionCanceledBlock:
-                strongSelf->_inboundConnectionCanceledBlock];
-            [inboundConnection start];
-
-            [strongSelf.inboundConnections addObject:inboundConnection];
+            [strongSelf.connectionsManager startConnection:connection
+                didConnectBlock:
+                ^{
+                    [strongSelf logOutside:@"New Client Connected"];
+                }];
         };
-
 }
+
+#pragma mark -
+
+- (void)logOutside:(NSString *)aLogMessage, ...
+{
+    if (nil != self.logBlock)
+    {
+        NSString *message = nil;
+        va_list args;
+        va_start(args, aLogMessage);
+        message = [[NSString alloc] initWithFormat:aLogMessage arguments:args];
+        va_end(args);
+        self.logBlock(message);
+    }
+}
+
+#pragma mark -
+
+- (void)setLogBlock:(void (^)(NSString *aLogMessage))aLogBlock
+{
+    self.logBlock = aLogBlock;
+    self.connectionsManager.logBlock = aLogBlock;
+}
+
+- (void)setStringReceivedBlock:(void (^)(NSString *aStringReceived))aStringReceivedBlock
+{
+    self.connectionsManager.stringReceivedBlock = aStringReceivedBlock;
+}
+
 @end
