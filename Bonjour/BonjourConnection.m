@@ -6,7 +6,7 @@
 
 @interface BonjourConnection ()
 
-@property (readwrite, atomic) nw_connection_t connection;
+@property (strong) nw_connection_t connection;
 
 @end
 
@@ -21,8 +21,6 @@
     void (^_connectionCanceledBlock)(BonjourConnection *aConnection);
     void (^_didConnectBlock)(void);
 }
-
-@synthesize connection;
 
 + (nw_connection_t)newConnectionWithName:(NSString *)aName type:(NSString *)aType
     domain:(NSString *)aDomain
@@ -134,19 +132,6 @@
     if (_didConnectBlock)
     {
         _didConnectBlock();
-    }
-}
-
-- (nw_connection_t)connection
-{
-    return connection;
-}
-
-- (void)setConnection:(nw_connection_t)aConnection
-{
-    if (connection != aConnection)
-    {
-        connection = aConnection;
     }
 }
 
