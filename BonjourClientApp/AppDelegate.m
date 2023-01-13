@@ -29,6 +29,13 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
+    [BonjourObject setLogBlock:
+        ^(NSString * _Nonnull aLogMessage)
+        {
+            NSLog(@"%@", aLogMessage);
+            [self logOutside:aLogMessage];
+        }];
+
     [self setupConnection];
 }
 
@@ -74,12 +81,6 @@
     }
 
     __weak typeof(self) weakSelf = self;
-    [self.connection setLogBlock:
-        ^(NSString * _Nonnull aLogMessage)
-        {
-            NSLog(@"%@", aLogMessage);
-            [weakSelf logOutside:aLogMessage];
-        }];
     [self.connection setStringReceivedBlock:
         ^(NSString * _Nonnull aStringReceived)
         {

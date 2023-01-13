@@ -34,10 +34,10 @@
 
     __weak typeof(self) weakSelf = self;
 
-    [self.listener setLogBlock:
+    [BonjourObject setLogBlock:
         ^(NSString * _Nonnull aLogMessage)
         {
-            [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
+            [self performSelectorOnMainThread:@selector(appendToLog:)
                 withObject:aLogMessage waitUntilDone:NO];
         }];
     [self.listener setStringReceivedBlock:

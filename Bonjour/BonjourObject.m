@@ -7,34 +7,34 @@
 
 #import "BonjourObject.h"
 
+static void (^LogBlock)(NSString *aLogMessage);
+
 @implementation BonjourObject
 {
-    void (^_logBlock)(NSString *aLogMessage);
     void (^_stringReceivedBlock)(NSString *aStringReceivedMessage);
 }
 
-- (void)dealloc
++ (void)setLogBlock:(void (^)(NSString *aLogMessage))aLogBlock
 {
-    _logBlock = nil;
-    _stringReceivedBlock = nil;
+    LogBlock = aLogBlock;
 }
 
-- (void)setLogBlock:(void (^)(NSString *aLogMessage))aLogBlock
++ (void)logOutside:(NSString *)aLogMessage, ...
 {
-    _logBlock = aLogBlock;
-}
-
-- (void)logOutside:(NSString *)aLogMessage, ...
-{
-    if (_logBlock)
+    if (LogBlock)
     {
         NSString *message = nil;
         va_list args;
         va_start(args, aLogMessage);
         message = [[NSString alloc] initWithFormat:aLogMessage arguments:args];
         va_end(args);
-        _logBlock(message);
+        LogBlock(message);
     }
+}
+
+- (void)dealloc
+{
+    _stringReceivedBlock = nil;
 }
 
 - (void)setStringReceivedBlock:(void (^)(NSString *aStringReceived))aStringReceivedBlock

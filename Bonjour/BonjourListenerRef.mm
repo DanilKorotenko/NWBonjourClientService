@@ -17,11 +17,9 @@ BNJListenerRef BNJListenerCreateWith(CFStringRef aName, CFStringRef aType,
     return listenerRef;
 }
 
-void BNJListenerSetLogBlock(BNJListenerRef aListenerRef,
-    void (^aBlock)(CFStringRef aLogMessage))
+void BNJSetLogBlock(void (^aBlock)(CFStringRef aLogMessage))
 {
-    BonjourListener *listener = (__bridge BonjourListener *)aListenerRef->_bnjListenerController;
-    [listener setLogBlock:
+    [BonjourObject setLogBlock:
         ^(NSString * _Nonnull aLogMessage)
         {
             CFStringRef logMessageRef = (CFStringRef)CFBridgingRetain(aLogMessage);

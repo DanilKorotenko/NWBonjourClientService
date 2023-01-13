@@ -21,7 +21,6 @@
     dispatch_queue_t    _queue;
     void (^_stdInReadHandler)(dispatch_data_t data, int error);
 
-    void (^_inboundConnectionLogBlock)(NSString *aLogMessage);
     void (^_inboundConnectionStringReceivedBlock)(NSString *aStringReceivedMessage);
     void (^_inboundConnectionCanceledBlock)(BonjourConnection *aConnection);
 
@@ -40,7 +39,6 @@
         self.inboundConnections = [NSMutableArray array];
         _queue = dispatch_queue_create("BonjourService.queue", NULL);
 
-        [self setInboundConnectionLogBlock];
         [self setInboundConnectionStringReceivedBlock];
         [self setInboundConnectionCancelledBlock];
         [self setListenerStateChangeHandler];
@@ -84,7 +82,7 @@
             ^(nw_endpoint_t _Nonnull advertised_endpoint, bool added)
             {
                 __typeof__(self) strongSelf = weakSelf;
-                [strongSelf logOutside: @"Listener %s on %s (%s.%s.%s)", added ? "added" : "removed",
+                [BonjourObject logOutside: @"Listener %s on %s (%s.%s.%s)", added ? "added" : "removed",
                     nw_endpoint_get_bonjour_service_name(advertised_endpoint),
                     nw_endpoint_get_bonjour_service_name(advertised_endpoint),
                     strongSelf.type.UTF8String,
@@ -159,7 +157,7 @@
             __typeof__(self) strongSelf = weakSelf;
             if (stdin_error != 0)
             {
-                [strongSelf logOutside:@"stdin read error: %d", stdin_error];
+                [BonjourObject logOutside:@"stdin read error: %d", stdin_error];
             }
             else if (read_data != NULL)
             {
@@ -168,17 +166,6 @@
                 // Continue reading from stdin
                 [strongSelf sendStdInLoop];
             }
-        };
-}
-
-- (void)setInboundConnectionLogBlock
-{
-    __weak typeof(self) weakSelf = self;
-    _inboundConnectionLogBlock =
-        ^(NSString *aLogMessage)
-        {
-            __typeof__(self) strongSelf = weakSelf;
-            [strongSelf logOutside:aLogMessage];
         };
 }
 
@@ -200,7 +187,7 @@
         ^(BonjourConnection *aConnection)
         {
             __typeof__(self) strongSelf = weakSelf;
-            [strongSelf logOutside:@"Client disconnected."];
+            [BonjourObject logOutside:@"Client disconnected."];
             if ([strongSelf.inboundConnections containsObject:aConnection])
             {
                 [strongSelf.inboundConnections removeObject:aConnection];
@@ -217,26 +204,26 @@
             __typeof__(self) strongSelf = weakSelf;
             if (state == nw_listener_state_waiting)
             {
-                [strongSelf logOutside:@"Listener on port %u waiting",
+                [BonjourObject logOutside:@"Listener on port %u waiting",
                     nw_listener_get_port(strongSelf->_listener)];
             }
             else if (state == nw_listener_state_failed)
             {
-                [strongSelf logOutside:@"listener failed"];
+                [BonjourObject logOutside:@"listener failed"];
             }
             else if (state == nw_listener_state_ready)
             {
-                [strongSelf logOutside:@"Listener on port %u ready!",
+                [BonjourObject logOutside:@"Listener on port %u ready!",
                     nw_listener_get_port(strongSelf->_listener)];
             }
             else if (state == nw_listener_state_cancelled)
             {
                 // Release the primary reference on the listener
                 // that was taken at creation time
-                [strongSelf logOutside:@"listener canceled."];
+                [BonjourObject logOutside:@"listener canceled."];
                 if (!strongSelf.shouldStop)
                 {
-                    [strongSelf logOutside:@"Try to restart."];
+                    [BonjourObject logOutside:@"Try to restart."];
                     [strongSelf.inboundConnections removeAllObjects];
                     strongSelf->_listener = nil;
                     [strongSelf start];
@@ -262,9 +249,8 @@
             BonjourConnection *inboundConnection = [[BonjourConnection alloc]
                 initWithConnection:connection];
 
-            [strongSelf logOutside:@"new connection: %@", inboundConnection];
+            [BonjourObject logOutside:@"new connection: %@", inboundConnection];
 
-            [inboundConnection setLogBlock:strongSelf->_inboundConnectionLogBlock];
             [inboundConnection setStringReceivedBlock:
                 strongSelf->_inboundConnectionStringReceivedBlock];
             [inboundConnection setConnectionCanceledBlock:

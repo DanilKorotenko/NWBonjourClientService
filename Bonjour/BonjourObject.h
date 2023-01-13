@@ -11,8 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface BonjourObject : NSObject
 
-- (void)setLogBlock:(void (^)(NSString *aLogMessage))aLogBlock;
-- (void)logOutside:(NSString *)aLogMessage, ...;
++ (void)setLogBlock:(void (^)(NSString *aLogMessage))aLogBlock;
++ (void)logOutside:(NSString *)aLogMessage, ...;
 
 - (void)setStringReceivedBlock:(void (^)(NSString *aStringReceived))aStringReceivedBlock;
 - (void)stringReceived:(NSString *)aStringReceived;

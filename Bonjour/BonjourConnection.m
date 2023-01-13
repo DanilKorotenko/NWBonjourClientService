@@ -240,7 +240,7 @@
             if (is_complete &&
                 (context == NULL || nw_content_context_get_is_final(context)))
             {
-                [strongSelf logOutside:@"is_complete, context is final. reset connection;"];
+                [BonjourObject logOutside:@"is_complete, context is final. reset connection;"];
                 [strongSelf connectionCanceled];
             }
             else if (receive_error == NULL)
@@ -253,13 +253,12 @@
 
 - (void)setSendCompletionBlock
 {
-    __weak typeof(self) weakSelf = self;
     _sendCompletion =
         ^(nw_error_t  _Nullable error)
         {
             if (error != NULL)
             {
-                [weakSelf logOutside:@"write close error: %d", nw_error_get_error_code(error)];
+                [BonjourObject logOutside:@"write close error: %d", nw_error_get_error_code(error)];
             }
         };
 }
@@ -274,7 +273,7 @@
 
             if (error != NULL)
             {
-                [strongSelf logOutside:@"send error: %d", nw_error_get_error_code(error)];
+                [BonjourObject logOutside:@"send error: %d", nw_error_get_error_code(error)];
             }
             else
             {
@@ -294,7 +293,7 @@
             __typeof__(self) strongSelf = weakSelf;
             if (stdin_error != 0)
             {
-                [strongSelf logOutside:@"stdin read error: %d", stdin_error];
+                [BonjourObject logOutside:@"stdin read error: %d", stdin_error];
             }
             else if (read_data == NULL)
             {
@@ -328,8 +327,8 @@
                 case nw_connection_state_invalid:
                 {
                     int errorCode = error ? nw_error_get_error_code(error) : 0;
-                    [strongSelf logOutside:@"Connection state invalid. Error: %d", errorCode];
                     strongSelf.isConnected = NO;
+                    [BonjourObject logOutside:@"Connection state invalid. Error: %d", errorCode];
                     break;
                 }
                 case nw_connection_state_waiting:
@@ -337,20 +336,20 @@
                     int errorCode = error ? nw_error_get_error_code(error) : 0;
 
                     strongSelf.isConnected = NO;
-                    [strongSelf logOutside:@"Connection state waiting. Error: %d", errorCode];
 
+                    [BonjourObject logOutside:@"Connection state waiting. Error: %d", errorCode];
                     break;
                 }
                 case nw_connection_state_preparing:
                 {
-                    [strongSelf logOutside:@"Connection state preparing."];
                     strongSelf.isConnected = NO;
+                    [BonjourObject logOutside:@"Connection state preparing."];
                     break;
                 }
                 case nw_connection_state_ready:
                 {
                     strongSelf.isConnected = YES;
-                    [strongSelf logOutside:@"Connection succeeded!"];
+                    [BonjourObject logOutside:@"Connection succeeded!"];
                     [strongSelf didConnect];
                     strongSelf->_didConnectBlock = nil;
 
@@ -361,7 +360,7 @@
                 {
                     int errorCode = error ? nw_error_get_error_code(error) : 0;
                     strongSelf.isConnected = NO;
-                    [strongSelf logOutside:@"Connect failed. Error: %d", errorCode];
+                    [BonjourObject logOutside:@"Connect failed. Error: %d", errorCode];
                     [strongSelf connectionCanceled];
 
                     break;
@@ -369,8 +368,8 @@
                 case nw_connection_state_cancelled:
                 {
                     int errorCode = error ? nw_error_get_error_code(error) : 0;
-                    [strongSelf logOutside:@"Connection cancelled. Error: %d", errorCode];
                     strongSelf.isConnected = NO;
+                    [BonjourObject logOutside:@"Connection cancelled. Error: %d", errorCode];
                     [strongSelf connectionCanceled];
                     break;
                 }

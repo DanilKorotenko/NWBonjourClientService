@@ -28,11 +28,6 @@ void setupConnection(void)
         err(1, NULL);
     }
 
-    [connection setLogBlock:
-        ^(NSString * _Nonnull aLogMessage)
-        {
-            NSLog(@"%@", aLogMessage);
-        }];
     [connection setStringReceivedBlock:
         ^(NSString * _Nonnull aStringReceived)
         {
@@ -52,6 +47,12 @@ int main(int argc, const char * argv[])
     @autoreleasepool
     {
         NSLog(@"Hello, Bonjour client!");
+        [BonjourObject setLogBlock:
+            ^(NSString * _Nonnull aLogMessage)
+            {
+                NSLog(@"%@", aLogMessage);
+            }];
+
         setupConnection();
     }
 
