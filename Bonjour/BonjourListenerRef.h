@@ -16,7 +16,7 @@ typedef BNJListener* BNJListenerRef;
 
 BNJListenerRef BNJListenerCreateWith(CFStringRef aName, CFStringRef aType, CFStringRef aDomain);
 
-void BNJSetLogBlock(void (^aBlock)(CFStringRef aLogMessage));
+void BNJListenerSetLogBlock(BNJListenerRef aListenerRef, void (^aBlock)(CFStringRef aLogMessage));
 
 void BNJListenerSetStringReceivedBlock(BNJListenerRef aListenerRef,
     void (^aBlock)(CFStringRef aStringReceivedMessage));

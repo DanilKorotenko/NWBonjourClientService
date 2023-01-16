@@ -79,17 +79,9 @@
                 if (NULL != errorRef)
                 {
                     NSError *err = CFBridgingRelease(errorRef);
-//                    NSString *errorDescr = CFBridgingRelease(errDescrRef);
                     [self logOutside:@"Connection error: %@", err];
                 }
-                if ([self.readyConnections containsObject:aConnection])
-                {
-                    [self.readyConnections removeObject:aConnection];
-                }
-                if (nil != self.connectionCanceledBlock)
-                {
-                    self.connectionCanceledBlock();
-                }
+                [self connectionCancelled:aConnection];
                 return;
             }
 
@@ -100,6 +92,7 @@
                 {
                     aDidConnectBlock();
                 }
+                [self receiveFromConnection:aConnection];
             }
         });
 
@@ -144,6 +137,37 @@
 
 #pragma mark -
 
+- (void)receiveFromConnection:(nw_connection_t)aConnection
+{
+    nw_connection_receive(aConnection, 1, UINT32_MAX,
+        ^(dispatch_data_t  _Nullable content, nw_content_context_t  _Nullable context,
+            bool is_complete, nw_error_t  _Nullable receive_error)
+        {
+            if (content != NULL)
+            {
+                NSData *data = [NSData dataWithData:(NSData *)content];
+                NSString *stringRecieved = [[NSString alloc] initWithData:data
+                    encoding:NSUTF8StringEncoding];
+                [self stringReceived:stringRecieved];
+            }
+
+            // If the context is marked as complete, and is the final context,
+            // we're read-closed.
+            if (is_complete &&
+                (context == NULL || nw_content_context_get_is_final(context)))
+            {
+                [self connectionCancelled:aConnection];
+            }
+            else if (receive_error == NULL)
+            {
+                // If there was no error in receiving, request more data
+                [self receiveFromConnection:aConnection];
+            }
+        });
+}
+
+#pragma mark -
+
 - (void)logOutside:(NSString *)aLogMessage, ...
 {
     if (self.logBlock)
@@ -154,6 +178,26 @@
         message = [[NSString alloc] initWithFormat:aLogMessage arguments:args];
         va_end(args);
         self.logBlock(message);
+    }
+}
+
+- (void)stringReceived:(NSString *)aStringReceived
+{
+    if (nil != self.stringReceivedBlock)
+    {
+        self.stringReceivedBlock(aStringReceived);
+    }
+}
+
+- (void)connectionCancelled:(nw_connection_t)aConnection
+{
+    if ([self.readyConnections containsObject:aConnection])
+    {
+        [self.readyConnections removeObject:aConnection];
+    }
+    if (nil != self.connectionCanceledBlock)
+    {
+        self.connectionCanceledBlock();
     }
 }
 

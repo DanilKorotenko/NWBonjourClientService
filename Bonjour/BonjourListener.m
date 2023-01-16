@@ -22,11 +22,6 @@
 
 @implementation BonjourListener
 {
-//    void (^_stdInReadHandler)(dispatch_data_t data, int error);
-//
-//    void (^_inboundConnectionStringReceivedBlock)(NSString *aStringReceivedMessage);
-//    void (^_inboundConnectionCanceledBlock)(BonjourConnection *aConnection);
-//
     nw_listener_state_changed_handler_t     _listenerStateChangeHandler;
     nw_listener_new_connection_handler_t    _listenerNewConnectionHandler;
 }
@@ -40,7 +35,13 @@
         self.type = aType;
         self.domain = aDomain;
         self.connectionsManager = [[BonjourConnectionsManager alloc] init];
+        __weak typeof(self) weakSelf = self;
 
+        self.connectionsManager.connectionCanceledBlock =
+            ^{
+                __typeof__(self) strongSelf = weakSelf;
+                [strongSelf logOutside:@"Connection closed."];
+            };
         self.queue = dispatch_queue_create("BonjourListener.queue", NULL);
 
 //        [self setInboundConnectionStringReceivedBlock];
@@ -173,32 +174,6 @@
 //        };
 //}
 
-//- (void)setInboundConnectionStringReceivedBlock
-//{
-//    __weak typeof(self) weakSelf = self;
-//    _inboundConnectionStringReceivedBlock =
-//        ^(NSString *aStringReceived)
-//        {
-//            __typeof__(self) strongSelf = weakSelf;
-//            [strongSelf stringReceived:aStringReceived];
-//        };
-//}
-
-//- (void)setInboundConnectionCancelledBlock
-//{
-//    __weak typeof(self) weakSelf = self;
-//    _inboundConnectionCanceledBlock =
-//        ^(BonjourConnection *aConnection)
-//        {
-//            __typeof__(self) strongSelf = weakSelf;
-//            [BonjourObject logOutside:@"Client disconnected."];
-//            if ([strongSelf.inboundConnections containsObject:aConnection])
-//            {
-//                [strongSelf.inboundConnections removeObject:aConnection];
-//            }
-//        };
-//}
-
 - (void)setListenerStateChangeHandler
 {
     __weak typeof(self) weakSelf = self;
@@ -253,7 +228,7 @@
             [strongSelf.connectionsManager startConnection:connection
                 didConnectBlock:
                 ^{
-                    [strongSelf logOutside:@"New Client Connected"];
+                    [strongSelf logOutside:@"New Connection"];
                 }];
         };
 }
@@ -277,7 +252,7 @@
 
 - (void)setLogBlock:(void (^)(NSString *aLogMessage))aLogBlock
 {
-    self.logBlock = aLogBlock;
+    self->_logBlock = aLogBlock;
     self.connectionsManager.logBlock = aLogBlock;
 }
 

@@ -26,7 +26,7 @@ int main(int argc, const char * argv[])
             err(1, NULL);
         }
 
-        BNJSetLogBlock(
+        BNJListenerSetLogBlock(listenerRef,
             ^(CFStringRef aLogMessage)
             {
                 NSString *logMessage = (__bridge NSString *)(aLogMessage);
