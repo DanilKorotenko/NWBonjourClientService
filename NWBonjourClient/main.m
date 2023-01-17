@@ -12,11 +12,21 @@
 
 static BonjourConnectionsManager *connectionsManager = nil;
 
+static BOOL reading = NO;
+
 void readFromStdIn(void)
 {
+    if (reading)
+    {
+        return;
+    }
+
+    reading = YES;
+
     dispatch_read(STDIN_FILENO, 8192, dispatch_get_main_queue(),
         ^(dispatch_data_t  _Nonnull data, int stdinError)
         {
+            reading = NO;
             if (stdinError != 0)
             {
                 NSLog(@"StdIn error: %d", stdinError);
