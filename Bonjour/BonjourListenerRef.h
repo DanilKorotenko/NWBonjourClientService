@@ -21,7 +21,10 @@ void BNJListenerSetLogBlock(BNJListenerRef aListenerRef, void (^aBlock)(CFString
 void BNJListenerSetStringReceivedBlock(BNJListenerRef aListenerRef,
     void (^aBlock)(CFStringRef aStringReceivedMessage));
 
-//void BNJListenerStartSendFromStdIn(BNJListenerRef aListenerRef);
+void BNJListenerSendDataWithSendCompletion(BNJListenerRef aListenerRef, dispatch_data_t aData,
+    void (^aSendCompletion)(CFErrorRef anError));
+void BNJListenerSendStringWithSendCompletion(BNJListenerRef aListenerRef, CFStringRef aString,
+    void (^aSendCompletion)(CFErrorRef anError));
 
 void BNJListenerStart(BNJListenerRef aListenerRef);
 void BNJListenerStop(BNJListenerRef aListenerRef);

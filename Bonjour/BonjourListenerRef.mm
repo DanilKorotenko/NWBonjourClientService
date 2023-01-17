@@ -47,6 +47,32 @@ void BNJListenerSetStringReceivedBlock(BNJListenerRef aListenerRef,
         }];
 }
 
+void BNJListenerSendDataWithSendCompletion(BNJListenerRef aListenerRef, dispatch_data_t aData,
+    void (^aSendCompletion)(CFErrorRef anError))
+{
+    BonjourListener *listener = (__bridge BonjourListener *)aListenerRef->_bnjListenerController;
+    [listener sendData:aData withSendCompletionBlock:
+        ^(NSError * _Nonnull error)
+        {
+            CFErrorRef errorRef = NULL;
+            if (error)
+            {
+                errorRef = (CFErrorRef)CFBridgingRetain(error);
+            }
+            aSendCompletion(errorRef);
+            if (errorRef)
+            {
+                CFRelease(errorRef);
+            }
+        }];
+}
+
+void BNJListenerSendStringWithSendCompletion(BNJListenerRef aListenerRef, CFStringRef aString,
+    void (^aSendCompletion)(CFErrorRef anError))
+{
+
+}
+
 void BNJListenerStart(BNJListenerRef aListenerRef)
 {
     BonjourListener *listener = (__bridge BonjourListener *)aListenerRef->_bnjListenerController;

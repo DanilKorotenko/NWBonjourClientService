@@ -44,8 +44,6 @@
             };
         self.queue = dispatch_queue_create("BonjourListener.queue", NULL);
 
-//        [self setInboundConnectionStringReceivedBlock];
-//        [self setInboundConnectionCancelledBlock];
         [self setListenerStateChangeHandler];
         [self setListenerNewConnectionHandler];
     }
@@ -120,59 +118,21 @@
     }
 }
 
-//- (void)startSendFromStdIn
-//{
-//    [self setStdInReadHandler];
-//
-//    // Start reading from stdin
-//    [self sendStdInLoop];
-//}
-
-//- (void)sendStdInLoop
-//{
-//    dispatch_read(STDIN_FILENO, 8192, _queue, _stdInReadHandler);
-//}
-
 #pragma mark -
 
-//- (void)sendData:(dispatch_data_t)aDataToSend
-//{
-//    for (BonjourConnection *connection in self.inboundConnections)
-//    {
-//        [connection sendDataWithRegularCompletion:aDataToSend];
-//    }
-//}
+- (void)sendData:(dispatch_data_t)aData
+    withSendCompletionBlock:(void (^)(NSError *error))aSendCompletionBlock
+{
+    [self.connectionsManager sendData:aData withSendCompletionBlock:aSendCompletionBlock];
+}
 
-//- (void)send:(NSString *)aStringToSend
-//{
-//    for (BonjourConnection *connection in self.inboundConnections)
-//    {
-//        [connection sendStringWithRegularCompletion:aStringToSend];
-//    }
-//}
+- (void)sendString:(NSString *)aString
+    withSendCompletionBlock:(void (^)(NSInteger errorCode))aSendCompletionBlock
+{
+    [self.connectionsManager sendString:aString withSendCompletionBlock:aSendCompletionBlock];
+}
 
 #pragma mark -
-
-//- (void)setStdInReadHandler
-//{
-//    __weak typeof(self) weakSelf = self;
-//    _stdInReadHandler =
-//        ^(dispatch_data_t _Nonnull read_data, int stdin_error)
-//        {
-//            __typeof__(self) strongSelf = weakSelf;
-//            if (stdin_error != 0)
-//            {
-//                [BonjourObject logOutside:@"stdin read error: %d", stdin_error];
-//            }
-//            else if (read_data != NULL)
-//            {
-//                [strongSelf sendData:read_data];
-//
-//                // Continue reading from stdin
-//                [strongSelf sendStdInLoop];
-//            }
-//        };
-//}
 
 - (void)setListenerStateChangeHandler
 {

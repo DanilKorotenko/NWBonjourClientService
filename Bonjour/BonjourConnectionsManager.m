@@ -88,6 +88,7 @@
             if (state == nw_connection_state_ready)
             {
                 [self.readyConnections addObject:aConnection];
+                [self logOutside:@"Connections: %d", self.readyConnections.count];
                 if (aDidConnectBlock)
                 {
                     aDidConnectBlock();
@@ -101,32 +102,46 @@
 
 #pragma mark -
 
+- (void)sendData:(dispatch_data_t)aData withEnumerator:(NSEnumerator<nw_connection_t> *)anEnumerator
+    withSendCompletionBlock:(void (^)(NSError *error))aSendCompletionBlock
+{
+    nw_connection_t connection = (nw_connection_t)[anEnumerator nextObject];
+    if (connection)
+    {
+        nw_connection_send(connection, aData, NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT, true,
+            ^(nw_error_t  _Nullable error)
+            {
+                NSError *err = nil;
+                if (error)
+                {
+                    CFErrorRef errRef = nw_error_copy_cf_error(error);
+                    if (NULL != errRef)
+                    {
+                        err = CFBridgingRelease(errRef);
+                        if (aSendCompletionBlock)
+                        {
+                            aSendCompletionBlock(err);
+                        }
+                    }
+                }
+                else
+                {
+                    [self sendData:aData withEnumerator:anEnumerator
+                        withSendCompletionBlock:aSendCompletionBlock];
+                }
+            });
+    }
+    else if (aSendCompletionBlock)
+    {
+        aSendCompletionBlock(nil);
+    }
+}
+
 - (void)sendData:(dispatch_data_t)aData
     withSendCompletionBlock:(void (^)(NSError *error))aSendCompletionBlock
 {
-    [self.readyConnections enumerateObjectsUsingBlock:
-        ^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop)
-        {
-            nw_connection_t connection = (nw_connection_t)obj;
-            nw_connection_send(connection, aData, NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT, true,
-                ^(nw_error_t  _Nullable error)
-                {
-                    NSError *err = nil;
-                    if (error)
-                    {
-                        CFErrorRef errRef = nw_error_copy_cf_error(error);
-                        if (NULL != errRef)
-                        {
-                            err = CFBridgingRelease(errRef);
-                        }
-                    }
-                    if (aSendCompletionBlock)
-                    {
-                        aSendCompletionBlock(err);
-                    }
-                });
-        }];
-
+    NSEnumerator<nw_connection_t> *enumerator = [self.readyConnections objectEnumerator];
+    [self sendData:aData withEnumerator:enumerator withSendCompletionBlock:aSendCompletionBlock];
 }
 
 - (void)sendString:(NSString *)aString
@@ -194,6 +209,7 @@
     if ([self.readyConnections containsObject:aConnection])
     {
         [self.readyConnections removeObject:aConnection];
+        [self logOutside:@"Connections: %d", self.readyConnections.count];
     }
     if (nil != self.connectionCanceledBlock)
     {
