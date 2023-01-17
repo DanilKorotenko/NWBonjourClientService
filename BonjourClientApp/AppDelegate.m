@@ -6,7 +6,7 @@
 //
 
 #import "AppDelegate.h"
-#import "BonjourConnection.h"
+#import "BonjourConnectionsManager.h"
 
 @interface AppDelegate ()
 
@@ -21,7 +21,7 @@
 @property (strong) IBOutlet NSTextView *clientLog;
 @property (strong) IBOutlet NSTextField *inputField;
 
-@property (strong) BonjourConnection *connection;
+@property (strong) BonjourConnectionsManager *connectionsManager;
 
 @end
 
@@ -29,12 +29,28 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    [BonjourObject setLogBlock:
+    self.connectionsManager = [[BonjourConnectionsManager alloc] init];
+
+    __weak typeof(self) weakSelf = self;
+    self.connectionsManager.logBlock =
         ^(NSString * _Nonnull aLogMessage)
         {
+            __typeof__(self) strongSelf = weakSelf;
             NSLog(@"%@", aLogMessage);
-            [self logOutside:aLogMessage];
-        }];
+            [strongSelf logOutside:aLogMessage];
+        };
+    self.connectionsManager.connectionCanceledBlock =
+        ^{
+            __typeof__(self) strongSelf = weakSelf;
+            [strongSelf setupConnection];
+        };
+    self.connectionsManager.stringReceivedBlock =
+        ^(NSString * _Nonnull aStringReceived)
+        {
+            __typeof__(self) strongSelf = weakSelf;
+            NSLog(@"%@", aStringReceived);
+            [strongSelf logOutside:aStringReceived];
+        };
 
     [self setupConnection];
 }
@@ -55,7 +71,14 @@
 {
     NSString *textToSend = self.inputField.stringValue;
 
-    [self.connection sendStringWithRegularCompletion:textToSend];
+    [self.connectionsManager sendString:textToSend withSendCompletionBlock:
+        ^(NSError * _Nonnull error)
+        {
+            if (nil != error)
+            {
+                [self logOutside:[NSString stringWithFormat:@"Error on send: %@", error]];
+            }
+        }];
 
     self.inputField.stringValue = @"";
 }
@@ -72,28 +95,15 @@
 
 - (void)setupConnection
 {
-    self.connection = [[BonjourConnection alloc] initWithName:
-        @"gtb-agent" type:@"_scan4DLPService._tcp" domain:@"local"];
-
-    if (self.connection == nil)
-    {
-        return;
-    }
-
     __weak typeof(self) weakSelf = self;
-    [self.connection setStringReceivedBlock:
-        ^(NSString * _Nonnull aStringReceived)
-        {
-            NSLog(@"%@", aStringReceived);
-            [weakSelf stringReceived:aStringReceived];
+    [self.connectionsManager startBonjourConnectionWithName:@"gtb-agent"
+        type:@"_scan4DLPService._tcp" domain:@"local"
+        didConnectBlock:
+        ^{
+            __typeof__(self) strongSelf = weakSelf;
+            NSLog(@"Connected.");
+            [strongSelf logOutside:@"Connected."];
         }];
-    [self.connection setConnectionCanceledBlock:
-        ^(BonjourConnection * _Nonnull aConnection)
-        {
-            [weakSelf didCancel];
-        }];
-
-    [self.connection start];
 }
 
 - (void)logOutside:(NSString *)aLogMessage
