@@ -34,16 +34,18 @@
 
     __weak typeof(self) weakSelf = self;
 
-    [BonjourObject setLogBlock:
+    [self.listener setLogBlock:
         ^(NSString * _Nonnull aLogMessage)
         {
-            [self performSelectorOnMainThread:@selector(appendToLog:)
+            __typeof__(self) strongSelf = weakSelf;
+            [strongSelf performSelectorOnMainThread:@selector(appendToLog:)
                 withObject:aLogMessage waitUntilDone:NO];
         }];
     [self.listener setStringReceivedBlock:
         ^(NSString * _Nonnull aStringReceived)
         {
-            [weakSelf performSelectorOnMainThread:@selector(appendToLog:)
+            __typeof__(self) strongSelf = weakSelf;
+            [strongSelf performSelectorOnMainThread:@selector(appendToLog:)
                 withObject:aStringReceived waitUntilDone:NO];
         }];
 
@@ -71,7 +73,14 @@
 {
     NSString *textToSend = self.inputField.stringValue;
 
-    [self.listener send:textToSend];
+    [self.listener sendString:textToSend withSendCompletionBlock:
+        ^(NSError * _Nonnull error)
+        {
+            if (nil != error)
+            {
+                [self appendToLog:[NSString stringWithFormat:@"Error on send: %@", error]];
+            }
+        }];
 
     self.inputField.stringValue = @"";
 }

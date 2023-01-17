@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)sendData:(dispatch_data_t)aData
     withSendCompletionBlock:(void (^)(NSError *error))aSendCompletionBlock;
 - (void)sendString:(NSString *)aString
-    withSendCompletionBlock:(void (^)(NSInteger errorCode))aSendCompletionBlock;
+    withSendCompletionBlock:(void (^)(NSError *error))aSendCompletionBlock;
 
 @end
 

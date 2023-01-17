@@ -127,7 +127,7 @@
 }
 
 - (void)sendString:(NSString *)aString
-    withSendCompletionBlock:(void (^)(NSInteger errorCode))aSendCompletionBlock
+    withSendCompletionBlock:(void (^)(NSError *error))aSendCompletionBlock
 {
     [self.connectionsManager sendString:aString withSendCompletionBlock:aSendCompletionBlock];
 }

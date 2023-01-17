@@ -9,6 +9,8 @@
 
 #import <Network/Network.h>
 
+#import "DispatchData.h"
+
 @interface BonjourConnectionsManager ()
 
 @property (strong) NSMutableArray<nw_connection_t> *readyConnections;
@@ -53,7 +55,7 @@
 - (void)startConnection:(nw_connection_t)aConnection
     didConnectBlock:(void (^)(void))aDidConnectBlock
 {
-    nw_connection_set_queue(aConnection, _queue);
+    nw_connection_set_queue(aConnection, self.queue);
 
     nw_connection_set_state_changed_handler(aConnection,
         ^(nw_connection_state_t state, nw_error_t  _Nullable error)
@@ -154,9 +156,10 @@
 }
 
 - (void)sendString:(NSString *)aString
-    withSendCompletionBlock:(void (^)(NSInteger errorCode))aSendCompletionBlock
+    withSendCompletionBlock:(void (^)(NSError *error))aSendCompletionBlock
 {
-
+    dispatch_data_t data = [DispatchData dispatch_data_from_NSString:aString queue:self.queue];
+    [self sendData:data withSendCompletionBlock:aSendCompletionBlock];
 }
 
 #pragma mark -
