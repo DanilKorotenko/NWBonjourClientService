@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)sendString:(NSString *)aString
     withSendCompletionBlock:(void (^)(NSError *error))aSendCompletionBlock;
 
+- (void)resetConnections;
+
 @end
 
 NS_ASSUME_NONNULL_END

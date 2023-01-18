@@ -30,12 +30,18 @@ void readFromStdIn(void)
             if (stdinError != 0)
             {
                 NSLog(@"StdIn error: %d", stdinError);
+                readFromStdIn();
             }
             else
             {
                 [connectionsManager sendData:data withSendCompletionBlock:
                     ^(NSError *err)
                     {
+//                        dispatch_async(dispatch_get_main_queue(),
+//                        ^{
+//                            [connectionsManager resetConnections];
+//                        });
+
                         if (err)
                         {
                             NSLog(@"Error on send: %@", err);
@@ -73,7 +79,10 @@ int main(int argc, const char * argv[])
             };
         connectionsManager.connectionCanceledBlock =
             ^{
-                setupNewConnection();
+                dispatch_async(dispatch_get_main_queue(),
+                    ^{
+                        setupNewConnection();
+                    });
             };
         connectionsManager.stringReceivedBlock =
             ^(NSString * _Nonnull aStringReceived)

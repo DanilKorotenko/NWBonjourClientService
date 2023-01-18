@@ -164,6 +164,16 @@
 
 #pragma mark -
 
+- (void)resetConnections
+{
+    for (nw_connection_t connection in self.readyConnections)
+    {
+        nw_connection_cancel(connection);
+    }
+}
+
+#pragma mark -
+
 - (void)receiveFromConnection:(nw_connection_t)aConnection
 {
     nw_connection_receive(aConnection, 1, UINT32_MAX,
